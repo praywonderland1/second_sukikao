@@ -1,1 +1,569 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE SECOND 好き顔メーカー</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2canvas for result image export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Google Fonts (Noto Sans JP) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f0f4f8;
+            color: #0f172a;
+        }
+        .card-hover {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px -6px rgba(37, 99, 235, 0.25);
+        }
+        .animate-pop {
+            animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.97); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .battle-card-img {
+            touch-action: manipulation;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-100 text-slate-800">
 
+    <!-- Header Navigation -->
+    <header class="bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-blue-100 shadow-sm">
+        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center text-white shadow-md shadow-blue-200">
+                    <i class="fa-solid fa-crown text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-lg sm:text-xl text-slate-900 leading-none tracking-tight">THE SECOND 好き顔メーカー</h1>
+                    <span class="text-[10px] sm:text-xs text-blue-600 font-bold tracking-wider">DIAGNOSIS TOOL</span>
+                </div>
+            </div>
+            <div id="headerActions" class="hidden flex items-center gap-2">
+                <button onclick="restartApp()" class="text-xs font-bold px-3 py-1.5 rounded-full text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> 最初から
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-4xl w-full mx-auto p-3 sm:p-6 flex flex-col justify-center">
+
+        <!-- SCREEN 1: LANDING / START DIAGNOSIS -->
+        <section id="startView" class="space-y-6 animate-pop">
+            <div class="bg-white rounded-3xl p-6 sm:p-10 shadow-xl shadow-blue-900/5 border border-blue-100 text-center">
+                <span class="inline-block px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-xs font-black mb-4 border border-blue-100 uppercase tracking-widest">2択選抜 診断</span>
+                <h2 class="text-2xl sm:text-4xl font-black text-slate-900 mb-3 tracking-tight">
+                    あなたの「好き顔9选」を診断！
+                </h2>
+                <p class="text-slate-500 text-xs sm:text-base max-w-md mx-auto leading-relaxed">
+                    表示される2つの画像から「好きな顔」を直感で選んでいくだけ。<br class="hidden sm:inline">
+                    あなたの好みランキングTOP9を自動で作成します！
+                </p>
+
+                <!-- Candidate Preview Grid -->
+                <div class="mt-8 pt-6 border-t border-slate-100">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">エントリー中の候補者</p>
+                    <div id="candidatePreview" class="flex flex-wrap justify-center gap-2 max-w-xl mx-auto max-h-48 overflow-y-auto p-1">
+                        <!-- Preview Images Populated Here -->
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <button onclick="startDiagnosis()" class="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-base sm:text-lg rounded-2xl shadow-xl shadow-blue-500/30 hover:shadow-blue-500/50 transition transform active:scale-95">
+                        <i class="fa-solid fa-play mr-2 text-sm"></i> 診断をはじめる
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 2: BATTLE / PAIRWISE MATCHES -->
+        <section id="battleView" class="hidden space-y-4 sm:space-y-6 animate-pop">
+            <!-- Progress Bar -->
+            <div class="bg-white p-3.5 sm:p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2">
+                <div class="flex justify-between text-xs font-bold text-slate-600">
+                    <span><i class="fa-solid fa-bolt text-blue-600 mr-1"></i> 2者択一対決</span>
+                    <span id="progressText">0 / 0 完了 (0%)</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden p-0.5 border border-slate-200/50">
+                    <div id="progressBar" class="bg-gradient-to-r from-blue-600 to-cyan-500 h-1.5 rounded-full transition-all duration-300 w-0"></div>
+                </div>
+            </div>
+
+            <!-- Side-By-Side Comparison Cards (2 Columns) -->
+            <div class="grid grid-cols-2 gap-2.5 sm:gap-6 relative w-full">
+                <!-- Card A (Left) -->
+                <div onclick="selectChoice(-1)" class="card-hover bg-white rounded-2xl sm:rounded-3xl p-2.5 sm:p-5 border-2 border-slate-200 hover:border-blue-500 cursor-pointer text-center group flex flex-col justify-between shadow-md">
+                    <div class="relative w-full aspect-square rounded-xl sm:rounded-2xl overflow-hidden bg-slate-100 mb-2 sm:mb-4 shadow-inner border border-slate-100">
+                        <img id="imgA" src="" alt="" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        <div id="placeholderA" class="hidden w-full h-full flex items-center justify-center font-bold text-slate-400 text-sm sm:text-xl px-2"></div>
+                        <span class="absolute top-2 left-2 sm:top-3 sm:left-3 bg-blue-600 text-white text-[10px] sm:text-xs font-black px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-md">A</span>
+                    </div>
+                    <div class="px-1">
+                        <h4 id="nameA" class="font-extrabold text-slate-900 text-sm sm:text-lg truncate leading-tight">候補 A</h4>
+                        <p id="subNameA" class="text-[10px] sm:text-xs text-slate-400 font-medium truncate mt-0.5">サブ名</p>
+                        <span class="inline-block mt-2 text-[10px] sm:text-xs text-blue-600 font-bold group-hover:underline">こちらを選択 (←)</span>
+                    </div>
+                </div>
+
+                <!-- Card B (Right) -->
+                <div onclick="selectChoice(1)" class="card-hover bg-white rounded-2xl sm:rounded-3xl p-2.5 sm:p-5 border-2 border-slate-200 hover:border-blue-500 cursor-pointer text-center group flex flex-col justify-between shadow-md">
+                    <div class="relative w-full aspect-square rounded-xl sm:rounded-2xl overflow-hidden bg-slate-100 mb-2 sm:mb-4 shadow-inner border border-slate-100">
+                        <img id="imgB" src="" alt="" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        <div id="placeholderB" class="hidden w-full h-full flex items-center justify-center font-bold text-slate-400 text-sm sm:text-xl px-2"></div>
+                        <span class="absolute top-2 left-2 sm:top-3 sm:left-3 bg-cyan-600 text-white text-[10px] sm:text-xs font-black px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-md">B</span>
+                    </div>
+                    <div class="px-1">
+                        <h4 id="nameB" class="font-extrabold text-slate-900 text-sm sm:text-lg truncate leading-tight">候補 B</h4>
+                        <p id="subNameB" class="text-[10px] sm:text-xs text-slate-400 font-medium truncate mt-0.5">サブ名</p>
+                        <span class="inline-block mt-2 text-[10px] sm:text-xs text-blue-600 font-bold group-hover:underline">こちらを選択 (→)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aux Actions -->
+            <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-3 pt-2">
+                <button onclick="selectChoice(0)" class="px-3.5 sm:px-5 py-2 sm:py-2.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs font-bold shadow-sm transition active:scale-95 flex items-center gap-1.5">
+                    <i class="fa-solid fa-equals text-amber-500"></i> 同じくらい (↑)
+                </button>
+                <button onclick="selectChoice(0)" class="px-3.5 sm:px-5 py-2 sm:py-2.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs font-bold shadow-sm transition active:scale-95 flex items-center gap-1.5">
+                    <i class="fa-solid fa-forward text-slate-400"></i> パス (↓)
+                </button>
+                <button onclick="undoChoice()" id="undoBtn" disabled class="px-3.5 sm:px-4 py-2 sm:py-2.5 bg-slate-200 text-slate-500 rounded-xl text-xs font-bold disabled:opacity-40 transition">
+                    <i class="fa-solid fa-rotate-left"></i> 戻る
+                </button>
+            </div>
+        </section>
+
+        <!-- SCREEN 3: RESULT "あなたの好き顔9選" 3x3 GRID -->
+        <section id="resultView" class="hidden space-y-6 animate-pop">
+            <!-- Action Bar -->
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <div>
+                    <h3 class="font-black text-slate-800 text-base sm:text-lg">
+                        <i class="fa-solid fa-sparkles text-blue-600 mr-1"></i> 診断結果が決定しました！
+                    </h3>
+                    <p class="text-xs text-slate-400">「あなたの好き顔9選」カード画像を保存・シェアできます</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="copyResultText()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center gap-1">
+                        <i class="fa-solid fa-copy"></i> テキストコピー
+                    </button>
+                    <button onclick="exportResultImage()" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl transition shadow-md flex items-center gap-1">
+                        <i class="fa-solid fa-download"></i> 9選画像を保存
+                    </button>
+                </div>
+            </div>
+
+            <!-- RESULT CARD FOR EXPORT: 3x3 Grid -->
+            <div id="resultExportContainer" class="bg-gradient-to-b from-slate-900 via-blue-950 to-slate-900 p-4 sm:p-8 rounded-3xl shadow-2xl text-white space-y-6 border border-blue-800/40">
+                
+                <div class="text-center pt-2 pb-2">
+                    <span class="text-[10px] sm:text-xs font-black tracking-widest text-cyan-400 uppercase bg-blue-900/60 px-3 py-1 rounded-full border border-cyan-500/30">
+                        THE SECOND 好き顔メーカー
+                    </span>
+                    <h2 class="text-2xl sm:text-4xl font-black mt-2 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-cyan-200">
+                        あなたの好き顔 9選
+                    </h2>
+                    <p class="text-[11px] sm:text-xs text-blue-300/80 mt-1">2択診断で決定したベスト顔ランキング</p>
+                </div>
+
+                <!-- 3x3 Grid -->
+                <div id="grid9Container" class="grid grid-cols-3 gap-2 sm:gap-4 max-w-2xl mx-auto">
+                    <!-- Dynamic 9 Grid Items Rendered Here -->
+                </div>
+
+                <div class="text-center pt-2 border-t border-blue-900/50 flex justify-between items-center text-[10px] text-blue-300/60">
+                    <span>#THE_SECOND_好き顔メーカー</span>
+                    <span>Pairwise Diagnosis Result</span>
+                </div>
+            </div>
+
+            <!-- Full Ranking List Breakdown -->
+            <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-md">
+                <h4 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4">全エントリー診断順位</h4>
+                <div id="fullRankList" class="space-y-2">
+                    <!-- Full ranking rows populated here -->
+                </div>
+            </div>
+
+            <div class="text-center pt-2">
+                <button onclick="restartApp()" class="px-6 py-3 bg-slate-900 hover:bg-black text-white text-sm font-bold rounded-2xl shadow transition">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> もう一度診断する
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // =========================================================================
+        // ▼▼▼ あなたが決められた候補データ（画像を差し替える場所） ▼▼▼
+        // メイン名 (mainName)、サブ名 (subName)、画像URL (imageUrl) を指定してください。
+        // ※ 9選を正しく生成するため、候補データは9件以上設定してください。
+        // =========================================================================
+        const INITIAL_CANDIDATES = [
+            {
+                id: 'p1',
+                mainName: 'アスカ',
+                subName: 'クール系 / 俳優',
+                imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80'
+            },
+            {
+                id: 'p2',
+                mainName: 'ケンタ',
+                subName: 'ナチュラル・爽やか',
+                imageUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&auto=format&fit=crop&q=80'
+            },
+            {
+                id: 'p3',
+                mainName: 'エミリ',
+                subName: 'エレガントスタイル',
+                imageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&auto=format&fit=crop&q=80'
+            },
+            {
+                id: 'p4',
+                mainName: 'リュウ',
+                subName: 'モード・ストリート',
+                imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=80'
+            },
+            {
+                id: 'p5',
+                mainName: 'サクラ',
+                subName: 'スマイル・キュート',
+                imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&auto=format&fit=crop&q=80'
+            },
+            {
+                id: 'p6',
+                mainName: 'タクミ',
+                subName: 'クラシック・ビジネス',
+                imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&auto=format&fit=crop&q=80'
+            },
+            {
+                id: 'p7',
+                mainName: 'メイ',
+                subName: 'アンニュイ・透明感',
+                imageUrl: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=500&auto=format&fit=crop&q=80'
+            },
+            {
+                id: 'p8',
+                mainName: 'ショウ',
+                subName: 'スポーティ・爽やか',
+                imageUrl: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=500&auto=format&fit=crop&q=80'
+            },
+            {
+                id: 'p9',
+                mainName: 'リン',
+                subName: 'フレッシュ・アクティブ',
+                imageUrl: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=500&auto=format&fit=crop&q=80'
+            }
+        ];
+
+        // State Management
+        let mergeSortState = null;
+        let historyStack = [];
+
+        // HTML Escape Helper
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        }
+
+        // Initialize Landing Page Candidate Previews
+        function initLandingPreview() {
+            const container = document.getElementById('candidatePreview');
+            container.innerHTML = INITIAL_CANDIDATES.map(c => `
+                <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden bg-slate-200 border border-slate-200 shadow-sm shrink-0" title="${escapeHtml(c.mainName)}">
+                    <img src="${c.imageUrl}" class="w-full h-full object-cover">
+                </div>
+            `).join('');
+        }
+
+        // Merge Sort Algorithm Class for Minimal Pairwise Comparisons
+        class MergeSorter {
+            constructor(arr) {
+                this.array = arr.map(item => [item]);
+                this.left = null;
+                this.right = null;
+                this.result = [];
+                this.i = 0;
+                this.j = 0;
+                this.totalComparisons = Math.ceil(arr.length * Math.log2(arr.length || 1));
+                this.completedComparisons = 0;
+            }
+
+            getCurrentPair() {
+                if (this.array.length <= 1 && !this.left) return null;
+
+                if (!this.left) {
+                    this.left = this.array.shift();
+                    this.right = this.array.shift();
+                    this.result = [];
+                    this.i = 0;
+                    this.j = 0;
+                }
+
+                return { itemA: this.left[this.i], itemB: this.right[this.j] };
+            }
+
+            processChoice(choice) {
+                this.completedComparisons++;
+
+                if (choice <= 0) {
+                    this.result.push(this.left[this.i]);
+                    this.i++;
+                } else {
+                    this.result.push(this.right[this.j]);
+                    this.j++;
+                }
+
+                if (this.i >= this.left.length) {
+                    while (this.j < this.right.length) {
+                        this.result.push(this.right[this.j]);
+                        this.j++;
+                    }
+                    this.array.push(this.result);
+                    this.left = null;
+                    this.right = null;
+                } else if (this.j >= this.right.length) {
+                    while (this.i < this.left.length) {
+                        this.result.push(this.left[this.i]);
+                        this.i++;
+                    }
+                    this.array.push(this.result);
+                    this.left = null;
+                    this.right = null;
+                }
+            }
+
+            getProgress() {
+                const total = Math.max(1, this.totalComparisons);
+                const current = Math.min(total, this.completedComparisons);
+                const percent = Math.min(100, Math.round((current / total) * 100));
+                return { current, total, percent };
+            }
+
+            isFinished() {
+                return this.array.length === 1 && !this.left;
+            }
+
+            getFinalResult() {
+                return this.array[0] || [];
+            }
+        }
+
+        function startDiagnosis() {
+            if (INITIAL_CANDIDATES.length < 2) return;
+
+            // Randomize order for fresh diagnosis
+            const shuffled = [...INITIAL_CANDIDATES].sort(() => Math.random() - 0.5);
+            mergeSortState = new MergeSorter(shuffled);
+            historyStack = [];
+
+            document.getElementById('startView').classList.add('hidden');
+            document.getElementById('battleView').classList.remove('hidden');
+            document.getElementById('headerActions').classList.remove('hidden');
+
+            renderCurrentBattle();
+        }
+
+        function renderCurrentBattle() {
+            if (mergeSortState.isFinished()) {
+                showResults();
+                return;
+            }
+
+            const pair = mergeSortState.getCurrentPair();
+            if (!pair) {
+                showResults();
+                return;
+            }
+
+            updateCard('A', pair.itemA);
+            updateCard('B', pair.itemB);
+
+            const prog = mergeSortState.getProgress();
+            document.getElementById('progressText').innerText = `${prog.current} / 約${prog.total} 回完了 (${prog.percent}%)`;
+            document.getElementById('progressBar').style.width = `${prog.percent}%`;
+            document.getElementById('undoBtn').disabled = historyStack.length === 0;
+        }
+
+        function updateCard(prefix, item) {
+            const imgEl = document.getElementById(`img${prefix}`);
+            const placeEl = document.getElementById(`placeholder${prefix}`);
+            const nameEl = document.getElementById(`name${prefix}`);
+            const subNameEl = document.getElementById(`subName${prefix}`);
+
+            nameEl.innerText = item.mainName;
+            subNameEl.innerText = item.subName || '';
+
+            if (item.imageUrl) {
+                imgEl.src = item.imageUrl;
+                imgEl.classList.remove('hidden');
+                placeEl.classList.add('hidden');
+            } else {
+                imgEl.classList.add('hidden');
+                placeEl.innerText = item.mainName;
+                placeEl.classList.remove('hidden');
+            }
+        }
+
+        function selectChoice(choice) {
+            if (!mergeSortState || mergeSortState.isFinished()) return;
+
+            historyStack.push(JSON.parse(JSON.stringify(mergeSortState)));
+            mergeSortState.processChoice(choice);
+            renderCurrentBattle();
+        }
+
+        function undoChoice() {
+            if (historyStack.length === 0) return;
+            const prevState = historyStack.pop();
+            mergeSortState = Object.assign(new MergeSorter([]), prevState);
+            renderCurrentBattle();
+        }
+
+        // Keybindings (Left / Right / Up / Down)
+        window.addEventListener('keydown', (e) => {
+            if (document.getElementById('battleView').classList.contains('hidden')) return;
+
+            if (e.key === 'ArrowLeft') selectChoice(-1);
+            else if (e.key === 'ArrowRight') selectChoice(1);
+            else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') selectChoice(0);
+        });
+
+        function showResults() {
+            document.getElementById('battleView').classList.add('hidden');
+            document.getElementById('resultView').classList.remove('hidden');
+
+            const rankedList = mergeSortState.getFinalResult();
+
+            // Render 3x3 Grid (Top 9)
+            const top9 = rankedList.slice(0, 9);
+            const grid9Container = document.getElementById('grid9Container');
+
+            grid9Container.innerHTML = top9.map((item, idx) => {
+                const rank = idx + 1;
+                let badgeBg = 'bg-slate-700 text-white';
+                if (rank === 1) badgeBg = 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black shadow-lg';
+                else if (rank === 2) badgeBg = 'bg-gradient-to-r from-slate-300 to-slate-100 text-slate-900 font-black';
+                else if (rank === 3) badgeBg = 'bg-gradient-to-r from-amber-700 to-amber-600 text-white font-black';
+
+                return `
+                    <div class="bg-slate-800/90 border border-blue-500/20 rounded-2xl sm:rounded-3xl p-2 sm:p-3 flex flex-col justify-between items-center text-center shadow-lg relative overflow-hidden group">
+                        <span class="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 z-10 text-[10px] sm:text-xs px-2 py-0.5 rounded-full ${badgeBg}">
+                            #${rank}
+                        </span>
+                        <div class="w-full aspect-square rounded-xl sm:rounded-2xl overflow-hidden bg-slate-900 mb-1.5 sm:mb-2 shadow-inner">
+                            ${item.imageUrl ? 
+                                `<img src="${item.imageUrl}" class="w-full h-full object-cover">` : 
+                                `<div class="w-full h-full flex items-center justify-center font-bold text-slate-400 text-xs px-1">${escapeHtml(item.mainName)}</div>`
+                            }
+                        </div>
+                        <div class="w-full px-0.5">
+                            <h5 class="font-black text-white text-xs sm:text-sm truncate leading-tight">${escapeHtml(item.mainName)}</h5>
+                            <p class="text-[9px] sm:text-[11px] text-slate-400 truncate mt-0.5">${escapeHtml(item.subName || 'ー')}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Render Full Ranked List Breakdown
+            const fullRankListEl = document.getElementById('fullRankList');
+            fullRankListEl.innerHTML = rankedList.map((item, idx) => {
+                const rank = idx + 1;
+                let badgeStyle = 'bg-slate-100 text-slate-600';
+                if (rank === 1) badgeStyle = 'bg-blue-600 text-white shadow-md';
+                if (rank === 2) badgeStyle = 'bg-slate-700 text-white';
+                if (rank === 3) badgeStyle = 'bg-slate-400 text-white';
+
+                return `
+                    <div class="flex items-center gap-3 p-2.5 bg-slate-50 rounded-2xl border border-slate-100">
+                        <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl ${badgeStyle} font-black text-xs sm:text-sm flex items-center justify-center shrink-0">
+                            ${rank}
+                        </span>
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden bg-slate-200 shrink-0">
+                            ${item.imageUrl ? 
+                                `<img src="${item.imageUrl}" class="w-full h-full object-cover">` : 
+                                `<div class="w-full h-full flex items-center justify-center font-bold text-slate-400 text-[10px] px-1">${escapeHtml(item.mainName)}</div>`
+                            }
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h5 class="font-bold text-slate-800 text-xs sm:text-sm truncate leading-tight">${escapeHtml(item.mainName)}</h5>
+                            <p class="text-[10px] text-slate-400 truncate">${escapeHtml(item.subName || '')}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function copyResultText() {
+            if (!mergeSortState) return;
+            const list = mergeSortState.getFinalResult();
+            
+            let text = "【THE SECOND 好き顔メーカー 診断結果 9選】\n";
+            list.slice(0, 9).forEach((item, index) => {
+                const sub = item.subName ? ` (${item.subName})` : '';
+                text += `${index + 1}位: ${item.mainName}${sub}\n`;
+            });
+
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = text;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+
+            alert("「好き顔9選」の診断結果テキストをコピーしました！");
+        }
+
+        function exportResultImage() {
+            const container = document.getElementById('resultExportContainer');
+            if (!container) return;
+
+            html2canvas(container, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: "#0f172a"
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `my-favorite-9-faces-${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(err => {
+                console.error("Image export failed:", err);
+                alert("画像の保存に失敗しました。テキストコピー機能をご利用ください。");
+            });
+        }
+
+        function restartApp() {
+            mergeSortState = null;
+            historyStack = [];
+
+            document.getElementById('startView').classList.remove('hidden');
+            document.getElementById('battleView').classList.add('hidden');
+            document.getElementById('resultView').classList.add('hidden');
+            document.getElementById('headerActions').classList.add('hidden');
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            initLandingPreview();
+        };
+    </script>
+</body>
+</html>
