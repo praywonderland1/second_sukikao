@@ -180,18 +180,113 @@
   <script>
     // 候補データ（サンプル。必要に応じて追加・変更してください）
     const INITIAL_CANDIDATES = [
-      { id: 1, name: "マシンガンズ 滝沢", group: "マシンガンズ", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80" },
-      { id: 2, name: "マシンガンズ 西堀", group: "マシンガンズ", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80" },
-      { id: 3, name: "三日月マンハッタン 仲嶺", group: "三日月マンハッタン", img: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=400&auto=format&fit=crop&q=80" },
-      { id: 4, name: "囲碁将棋 文田", group: "囲碁将棋", img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80" },
-      { id: 5, name: "囲碁将棋 根建", group: "囲碁将棋", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&auto=format&fit=crop&q=80" },
-      { id: 6, name: "ギャロップ 林", group: "ギャロップ", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&auto=format&fit=crop&q=80" },
-      { id: 7, name: "ギャロップ 毛利", group: "ギャロップ", img: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop&q=80" },
-      { id: 8, name: "テンダラー 白川", group: "テンダラー", img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&auto=format&fit=crop&q=80" },
-      { id: 9, name: "テンダラー 浜本", group: "テンダラー", img: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400&auto=format&fit=crop&q=80" },
-      { id: 10, name: "超新塾 アイアム野田", group: "超新塾", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80" },
-      { id: 11, name: "ランジャタイ 伊藤", group: "ランジャタイ", img: "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=400&auto=format&fit=crop&q=80" },
-      { id: 12, name: "タイムマシーン3号 関", group: "タイムマシーン3号", img: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=400&auto=format&fit=crop&q=80" }
+      { id: 1, name: "田中一彦", group: "スーパーマラドーナ", img: "https://i.imgur.com/nn4gWHT.jpeg" },
+      { id: 2, name: "武智", group: "スーパーマラドーナ", img: "" },
+      { id: 3, name: "小林圭輔", group: "金属バット", img: "" },
+      { id: 4, name: "友保隼平", group: "金属バット", img: "" },
+      { id: 5, name: "福田恵悟", group: "LLR", img: "" },
+      { id: 6, name: "伊藤智博", group: "LLR", img: "" },
+      { id: 7, name: "梅村賢太郎", group: "ラフ次元", img: "" },
+      { id: 8, name: "空道太郎", group: "ラフ次元", img: "" },
+      { id: 9, name: "大波康平", group: "タモンズ", img: "" },
+      { id: 10, name: "安部浩章", group: "タモンズ", img: "" },
+      { id: 11, name: "西森洋一", group: "モンスターエンジン", img: "" },
+      { id: 12, name: "大林健二", group: "モンスターエンジン", img: "" }
+      { id: 12, name: "", group: "レイザーラモン", img: "" }
+      { id: 12, name: "", group: "レイザーラモン", img: "" }
+      { id: 12, name: "", group: "ななまがり", img: "" }
+      { id: 12, name: "", group: "ななまがり", img: "" }
+      { id: 12, name: "", group: "エル・カブキ", img: "" }
+      { id: 12, name: "", group: "エル・カブキ", img: "" }
+      { id: 12, name: "", group: "はりけ～んず", img: "" }
+      { id: 12, name: "", group: "はりけ～んず", img: "" }
+      { id: 12, name: "", group: "ツーナッカン", img: "" }
+      { id: 12, name: "", group: "ツーナッカン", img: "" }
+      { id: 12, name: "", group: "ザ・パンチ", img: "" }
+      { id: 12, name: "", group: "ザ・パンチ", img: "" }
+      { id: 12, name: "", group: "スマイル", img: "" }
+      { id: 12, name: "", group: "スマイル", img: "" }
+      { id: 12, name: "", group: "セルライトスパ", img: "" }
+      { id: 12, name: "", group: "セルライトスパ", img: "" }
+      { id: 12, name: "", group: "黒帯", img: "" }
+      { id: 12, name: "", group: "黒帯", img: "" } 
+      { id: 12, name: "", group: "カナメストーン", img: "" } 
+      { id: 12, name: "", group: "カナメストーン", img: "" } 
+      { id: 12, name: "", group: "パタパタママ", img: "" } 
+      { id: 12, name: "", group: "パタパタママ", img: "" } 
+      { id: 12, name: "", group: "シマッシュレコード", img: "" } 
+      { id: 12, name: "", group: "シマッシュレコード", img: "" } 
+      { id: 12, name: "", group: "ちょんまげラーメン", img: "" } 
+      { id: 12, name: "", group: "ちょんまげラーメン", img: "" } 
+      { id: 12, name: "", group: "シャンプーハット", img: "" } 
+      { id: 12, name: "", group: "シャンプーハット", img: "" } 
+      { id: 12, name: "", group: "Dr.ハインリッヒ", img: "" } 
+      { id: 12, name: "", group: "Dr.ハインリッヒ", img: "" } 
+      { id: 12, name: "", group: "吉田たち", img: "" } 
+      { id: 12, name: "", group: "吉田たち", img: "" } 
+      { id: 12, name: "", group: "ヤング", img: "" } 
+      { id: 12, name: "", group: "ヤング", img: "" } 
+      { id: 12, name: "", group: "タナからイケダ", img: "" } 
+      { id: 12, name: "", group: "タナからイケダ", img: "" } 
+      { id: 12, name: "", group: "三拍子", img: "" } 
+      { id: 12, name: "", group: "三拍子", img: "" } 
+      { id: 12, name: "", group: "マシンガンズ", img: "" } 
+      { id: 12, name: "", group: "マシンガンズ", img: "" } 
+      { id: 12, name: "", group: "高校ズ", img: "" } 
+      { id: 12, name: "", group: "高校ズ", img: "" } 
+      { id: 12, name: "", group: "リニア", img: "" } 
+      { id: 12, name: "", group: "リニア", img: "" } 
+      { id: 12, name: "", group: "ハンジロウ", img: "" } 
+      { id: 12, name: "", group: "ハンジロウ", img: "" } 
+      { id: 12, name: "", group: "囲碁将棋", img: "" } 
+      { id: 12, name: "", group: "囲碁将棋", img: "" } 
+      { id: 12, name: "", group: "ブルーリバー", img: "" } 
+      { id: 12, name: "", group: "ブルーリバー", img: "" } 
+      { id: 12, name: "", group: "トット", img: "" } 
+      { id: 12, name: "", group: "トット", img: "" } 
+      { id: 12, name: "", group: "祇園", img: "" } 
+      { id: 12, name: "", group: "祇園", img: "" } 
+      { id: 12, name: "", group: "見取り図", img: "" } 
+      { id: 12, name: "", group: "見取り図", img: "" } 
+      { id: 12, name: "", group: "ドドん", img: "" } 
+      { id: 12, name: "", group: "ドドん", img: "" } 
+      { id: 12, name: "", group: "アモーン", img: "" } 
+      { id: 12, name: "", group: "アモーン", img: "" } 
+      { id: 12, name: "", group: "本田兄妹", img: "" } 
+      { id: 12, name: "", group: "本田兄妹", img: "" } 
+      { id: 12, name: "", group: "母心", img: "" } 
+      { id: 12, name: "", group: "母心", img: "" } 
+      { id: 12, name: "", group: "ザ・ぼんち", img: "" } 
+      { id: 12, name: "", group: "ザ・ぼんち", img: "" } 
+      { id: 12, name: "", group: "モグライダー", img: "" } 
+      { id: 12, name: "", group: "モグライダー", img: "" } 
+      { id: 12, name: "", group: "チャーミング", img: "" } 
+      { id: 12, name: "", group: "チャーミング", img: "" } 
+      { id: 12, name: "", group: "ヘンダーソン", img: "" } 
+      { id: 12, name: "", group: "ヘンダーソン", img: "" } 
+      { id: 12, name: "", group: "ジャルジャル", img: "" } 
+      { id: 12, name: "", group: "ジャルジャル", img: "" } 
+      { id: 12, name: "", group: "ツートライブ", img: "" } 
+      { id: 12, name: "", group: "ツートライブ", img: "" } 
+      { id: 12, name: "", group: "天津", img: "" } 
+      { id: 12, name: "", group: "天津", img: "" } 
+      { id: 12, name: "", group: "ダブルアート", img: "" } 
+      { id: 12, name: "", group: "ダブルアート", img: "" } 
+      { id: 12, name: "", group: "三日月マンハッタン", img: "" } 
+      { id: 12, name: "", group: "三日月マンハッタン", img: "" } 
+      { id: 12, name: "", group: "ロビンフッド", img: "" } 
+      { id: 12, name: "", group: "ロビンフッド", img: "" } 
+      { id: 12, name: "", group: "テンダラー", img: "" } 
+      { id: 12, name: "", group: "テンダラー", img: "" } 
+      { id: 12, name: "", group: "インポッシブル", img: "" } 
+      { id: 12, name: "", group: "インポッシブル", img: "" } 
+      { id: 12, name: "", group: "COWCOW", img: "" } 
+      { id: 12, name: "", group: "COWCOW", img: "" } 
+      { id: 12, name: "", group: "かもめんたる", img: "" } 
+      { id: 12, name: "", group: "かもめんたる", img: "" } 
+      { id: 12, name: "", group: "流れ星☆", img: "" } 
+      { id: 12, name: "", group: "流れ星☆", img: "" } 
+      { id: 12, name: "", group: "", img: "" } 
     ];
 
     let candidates = [];
