@@ -1,1 +1,483 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ザセカ好き顔9選</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- html2canvas for image generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
+  <style>
+    .responsive-title {
+      font-size: clamp(1.25rem, 6vw, 2.5rem);
+      white-space: nowrap;
+      letter-spacing: -0.02em;
+    }
+    
+    .mic-icon-wrapper {
+      background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+      box-shadow: 0 4px 15px rgba(56, 189, 248, 0.25);
+    }
 
+    @keyframes toastIn {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .animate-toast {
+      animation: toastIn 0.25s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0.3; transform: scale(0.98); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .animate-card-switch {
+      animation: fadeIn 0.22s ease-out forwards;
+    }
+
+    /* タッチデバイスでのSticky Hover（ホバー状態の残存）を完全防止 */
+    @media (hover: hover) and (pointer: fine) {
+      .candidate-card-hover:hover {
+        border-color: #38bdf8 !important;
+        background-color: rgba(240, 249, 255, 0.6) !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+      }
+      .candidate-card-hover:hover img {
+        transform: scale(1.04);
+      }
+      .action-btn-hover:hover {
+        border-color: #7dd3fc !important;
+        background-color: #f0f9ff !important;
+      }
+    }
+
+    /* スマホ・タッチデバイスでのタップ時フォーカス枠・ハイライトの削除 */
+    button, div {
+      -webkit-tap-highlight-color: transparent !important;
+      outline: none !important;
+    }
+  </style>
+</head>
+<body class="bg-sky-50/50 text-slate-800 min-h-screen flex flex-col font-sans select-none">
+
+  <header class="bg-white/90 backdrop-blur-md border-b border-sky-100 sticky top-0 z-50">
+    <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+      <h1 class="font-bold text-slate-700 text-sm md:text-base flex items-center gap-2">
+        <span class="text-sky-500 text-base">🎙</span>
+        <span class="bg-gradient-to-r from-sky-600 to-cyan-500 bg-clip-text text-transparent font-extrabold">THE SECOND 好き顔診断</span>
+      </h1>
+      <span id="step-indicator" class="text-xs bg-sky-50 text-sky-600 border border-sky-200 font-medium px-2.5 py-1 rounded-full hidden">
+        選択中: <span id="current-round">1</span> / <span id="total-rounds">--</span>
+      </span>
+    </div>
+  </header>
+
+  <div id="toast-container" class="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 w-11/12 max-w-sm pointer-events-none"></div>
+
+  <main class="flex-grow max-w-2xl w-full mx-auto p-4 flex flex-col justify-center">
+
+    <!-- 1. Top Screen -->
+    <div id="screen-top" class="bg-white rounded-3xl shadow-sm border border-sky-100 p-6 md:p-8 text-center flex flex-col items-center">
+      <div class="w-20 h-20 mic-icon-wrapper rounded-2xl flex items-center justify-center mb-6 text-3xl border border-sky-200/60 transform hover:scale-105 transition duration-300">
+        🎙
+      </div>
+
+      <h2 class="responsive-title font-extrabold text-slate-800 mb-3 w-full text-center tracking-tight">
+        ザセカ好き顔9選
+      </h2>
+
+      <p class="text-slate-600 text-sm md:text-base mb-8 text-center leading-relaxed font-medium">
+        表示される2人から「好きな顔」を直感で選ぼう！<br>
+        あなたの好みの顔ベスト9を自動で作成します。
+      </p>
+
+      <button id="btn-start" onclick="startDiagnosis()" class="w-full max-w-xs bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-600 hover:to-cyan-600 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-sky-200 transition duration-200 text-base md:text-lg flex items-center justify-center gap-2 group active:scale-95">
+        <span>診断をスタート</span>
+        <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+      </button>
+
+      <div class="mt-10 pt-6 border-t border-slate-100 text-left w-full text-xs text-slate-400 space-y-2 leading-relaxed">
+        <p class="flex items-start gap-1.5">
+          <span class="select-none text-sky-400">◾︎</span>
+          <span>この診断は、「THE SECOND〜漫才トーナメント〜」の2023〜2026にて一度でもノックアウトステージに進出した漫才師を対象にしています。</span>
+        </p>
+        <p class="flex items-start gap-1.5">
+          <span class="select-none text-sky-400">◾︎</span>
+          <span>2026年大会終了現在で、最新のノックアウトステージ進出年の写真を使用しています。</span>
+        </p>
+        <p class="flex items-start gap-1.5">
+          <span class="select-none text-sky-400">◾︎</span>
+          <span>THE SECONDおよび各所属事務所とは、一切関係ありません。</span>
+        </p>
+        <p class="flex items-start gap-1.5">
+          <span class="select-none text-sky-400">◾︎</span>
+          <span>非公式のファンメイドサイトです。予めご了承ください。</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- 2. Battle (Diagnosis) Screen -->
+    <div id="screen-battle" class="hidden flex-col items-center">
+      <div class="w-full bg-slate-100 h-2.5 rounded-full mb-6 overflow-hidden border border-sky-100">
+        <div id="progress-bar" class="bg-gradient-to-r from-sky-400 to-cyan-500 h-full w-0 transition-all duration-300"></div>
+      </div>
+
+      <p class="text-center font-bold text-slate-700 text-base md:text-lg mb-5 flex items-center gap-2">
+        <span class="text-sky-500">どちらの顔が好みですか？</span>
+      </p>
+
+      <!-- Matchup Cards Container -->
+      <div id="cards-container" class="grid grid-cols-2 gap-3 md:gap-6 w-full mb-4">
+        <!-- Candidate A -->
+        <button id="btn-card-a" onclick="selectCandidate(0)" class="candidate-card-hover bg-white rounded-2xl border-2 border-slate-100 p-2.5 md:p-4 transition-all duration-150 active:scale-95 flex flex-col items-center focus:outline-none shadow-sm cursor-pointer">
+          <div class="w-full aspect-square rounded-xl overflow-hidden bg-slate-100 mb-2.5 relative border border-slate-100">
+            <img id="img-a" src="" alt="候補A" class="w-full h-full object-cover transition duration-200">
+          </div>
+          <span id="name-a" class="font-bold text-slate-800 text-sm md:text-base line-clamp-1">--</span>
+          <span id="group-a" class="text-xs text-sky-600/70 font-medium line-clamp-1">--</span>
+        </button>
+
+        <!-- Candidate B -->
+        <button id="btn-card-b" onclick="selectCandidate(1)" class="candidate-card-hover bg-white rounded-2xl border-2 border-slate-100 p-2.5 md:p-4 transition-all duration-150 active:scale-95 flex flex-col items-center focus:outline-none shadow-sm cursor-pointer">
+          <div class="w-full aspect-square rounded-xl overflow-hidden bg-slate-100 mb-2.5 relative border border-slate-100">
+            <img id="img-b" src="" alt="候補B" class="w-full h-full object-cover transition duration-200">
+          </div>
+          <span id="name-b" class="font-bold text-slate-800 text-sm md:text-base line-clamp-1">--</span>
+          <span id="group-b" class="text-xs text-sky-600/70 font-medium line-clamp-1">--</span>
+        </button>
+      </div>
+
+      <!-- Additional Option Buttons (どっちも好き / わからない) -->
+      <div class="grid grid-cols-2 gap-3 w-full">
+        <button id="btn-both" onclick="selectBoth()" class="action-btn-hover bg-white text-sky-600 border-2 border-sky-100 font-bold py-3 px-4 rounded-xl text-xs md:text-sm transition duration-150 active:scale-95 flex items-center justify-center gap-2 shadow-sm focus:outline-none cursor-pointer">
+          <i class="fa-solid fa-heart text-sky-400 text-sm"></i>
+          <span>どっちも好き</span>
+        </button>
+        <button id="btn-neither" onclick="selectNeither()" class="action-btn-hover bg-white text-slate-500 border-2 border-slate-100 font-bold py-3 px-4 rounded-xl text-xs md:text-sm transition duration-150 active:scale-95 flex items-center justify-center gap-2 shadow-sm focus:outline-none cursor-pointer">
+          <i class="fa-solid fa-circle-question text-slate-400 text-sm"></i>
+          <span>わからない</span>
+        </button>
+      </div>
+
+      <!-- Undo / Back Button -->
+      <div class="mt-3 w-full flex justify-center">
+        <button id="btn-back" onclick="previousRound()" class="action-btn-hover bg-white text-slate-500 border border-slate-200 font-bold py-2 px-4 rounded-xl text-xs transition duration-150 active:scale-95 flex items-center justify-center gap-1.5 shadow-sm focus:outline-none cursor-pointer disabled:opacity-40 disabled:pointer-events-none">
+          <i class="fa-solid fa-rotate-left text-slate-400"></i>
+          <span>ひとつ戻る</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. Result Screen -->
+    <div id="screen-result" class="hidden flex-col items-center">
+      <div class="text-center mb-6">
+        <span class="text-xs font-bold text-sky-600 uppercase tracking-widest bg-sky-100/80 px-3 py-1 rounded-full border border-sky-200">Diagnosis Result</span>
+        <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800 mt-2">あなたの好き顔 9選</h2>
+      </div>
+
+      <div id="result-grid-container" class="bg-slate-900 p-3 md:p-4 rounded-3xl shadow-2xl w-full max-w-md mx-auto mb-6 border border-slate-800">
+        <div id="result-grid" class="grid grid-cols-3 gap-2">
+        </div>
+        <div class="text-right mt-2.5 pr-1 flex justify-between items-center px-1">
+          <span class="text-[9px] text-slate-500 font-medium">THE SECOND 好き顔診断</span>
+          <span class="text-[10px] text-sky-400 font-bold tracking-wide">#ザセカ好き顔9選</span>
+        </div>
+      </div>
+
+      <div class="w-full max-w-md bg-white rounded-2xl border border-sky-100 p-5 mb-6 text-center shadow-sm">
+        <p class="font-bold text-slate-700 text-sm mb-4 flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-share-nodes text-sky-500"></i>
+          <span>結果をSNSで共有する</span>
+        </p>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+          <button onclick="shareX()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold transition active:scale-95">
+            <i class="fa-brands fa-x-twitter text-lg mb-1"></i>
+            <span>Xでポスト</span>
+          </button>
+
+          <button onclick="shareLINE()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-[#06C755] hover:opacity-90 text-white text-xs font-bold transition active:scale-95">
+            <i class="fa-brands fa-line text-lg mb-1"></i>
+            <span>LINEで送信</span>
+          </button>
+
+          <button onclick="shareInstagram()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white text-xs font-bold hover:opacity-90 transition active:scale-95">
+            <i class="fa-brands fa-instagram text-lg mb-1"></i>
+            <span>Instagram</span>
+          </button>
+
+          <button onclick="copyLink()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition active:scale-95">
+            <i class="fa-solid fa-link text-lg mb-1 text-slate-500"></i>
+            <span>URLコピー</span>
+          </button>
+        </div>
+
+        <button onclick="downloadResultImage()" class="w-full py-3 px-4 bg-sky-50 text-sky-700 hover:bg-sky-100 font-bold text-xs md:text-sm rounded-xl transition flex items-center justify-center gap-2 border border-sky-200 active:scale-95">
+          <i class="fa-solid fa-download text-sky-500"></i>
+          <span>9選画像を保存する</span>
+        </button>
+      </div>
+
+      <button onclick="resetDiagnosis()" class="text-slate-400 hover:text-sky-600 text-sm font-semibold underline underline-offset-4 py-2 transition">
+        もう一度やり直す
+      </button>
+    </div>
+
+  </main>
+
+  <footer class="py-4 text-center text-xs text-slate-400">
+    &copy; THE SECOND Fan Made Diagnosis
+  </footer>
+
+  <script>
+    const INITIAL_CANDIDATES = [
+      { id: 1, name: "マシンガンズ 滝沢", group: "マシンガンズ", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80" },
+      { id: 2, name: "マシンガンズ 西堀", group: "マシンガンズ", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80" },
+      { id: 3, name: "三日月マンハッタン 仲嶺", group: "三日月マンハッタン", img: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=400&auto=format&fit=crop&q=80" },
+      { id: 4, name: "囲碁将棋 文田", group: "囲碁将棋", img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80" },
+      { id: 5, name: "囲碁将棋 根建", group: "囲碁将棋", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&auto=format&fit=crop&q=80" },
+      { id: 6, name: "ギャロップ 林", group: "ギャロップ", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&auto=format&fit=crop&q=80" },
+      { id: 7, name: "ギャロップ 毛利", group: "ギャロップ", img: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop&q=80" },
+      { id: 8, name: "テンダラー 白川", group: "テンダラー", img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&auto=format&fit=crop&q=80" },
+      { id: 9, name: "テンダラー 浜本", group: "テンダラー", img: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400&auto=format&fit=crop&q=80" },
+      { id: 10, name: "超新塾 アイアム野田", group: "超新塾", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80" },
+      { id: 11, name: "ランジャタイ 伊藤", group: "ランジャタイ", img: "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=400&auto=format&fit=crop&q=80" },
+      { id: 12, name: "タイムマシーン3号 関", group: "タイムマシーン3号", img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&auto=format&fit=crop&q=80" }
+    ];
+
+    let candidates = [];
+    let currentPairIndex = 0;
+    let pairings = [];
+    let selectionHistory = [];
+
+    function showToast(message, isSuccess = true) {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      toast.className = `animate-toast pointer-events-auto p-3.5 rounded-2xl shadow-lg border text-xs md:text-sm font-bold flex items-center gap-2 mb-2 ${
+        isSuccess ? 'bg-slate-900 text-white border-slate-700' : 'bg-rose-500 text-white border-rose-600'
+      }`;
+      toast.innerHTML = `
+        <i class="${isSuccess ? 'fa-solid fa-circle-check text-sky-400' : 'fa-solid fa-circle-exclamation'} text-base"></i>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    }
+
+    function clearAllButtonFocus() {
+      if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+      }
+      const buttons = document.querySelectorAll('button');
+      buttons.forEach(btn => {
+        btn.blur();
+      });
+    }
+
+    function startDiagnosis() {
+      if (INITIAL_CANDIDATES.length < 9) {
+        showToast("候補者が9名未満のため診断を開始できません。", false);
+        return;
+      }
+
+      candidates = [...INITIAL_CANDIDATES].sort(() => Math.random() - 0.5);
+      
+      pairings = [];
+      for (let i = 0; i < candidates.length - 1; i += 2) {
+        pairings.push([i, i + 1]);
+      }
+
+      candidates.forEach(c => c.score = 0);
+      selectionHistory = [];
+
+      document.getElementById("screen-top").classList.add("hidden");
+      document.getElementById("screen-battle").classList.remove("hidden");
+      document.getElementById("screen-battle").classList.add("flex");
+      document.getElementById("step-indicator").classList.remove("hidden");
+
+      currentPairIndex = 0;
+      updateBattleView();
+    }
+
+    function updateBattleView() {
+      clearAllButtonFocus();
+
+      const totalRounds = pairings.length;
+      document.getElementById("current-round").textContent = currentPairIndex + 1;
+      document.getElementById("total-rounds").textContent = totalRounds;
+
+      const progress = ((currentPairIndex) / totalRounds) * 100;
+      document.getElementById("progress-bar").style.width = `${progress}%`;
+
+      // ひとつ戻るボタンの有効化・無効化の切り替え
+      const btnBack = document.getElementById("btn-back");
+      if (btnBack) {
+        if (currentPairIndex > 0) {
+          btnBack.disabled = false;
+          btnBack.classList.remove("opacity-40", "pointer-events-none");
+        } else {
+          btnBack.disabled = true;
+          btnBack.classList.add("opacity-40", "pointer-events-none");
+        }
+      }
+
+      const [idxA, idxB] = pairings[currentPairIndex];
+      const candA = candidates[idxA];
+      const candB = candidates[idxB];
+
+      // カードのアニメーション再適用で状態切り替えを明確化
+      const container = document.getElementById("cards-container");
+      container.classList.remove("animate-card-switch");
+      void container.offsetWidth; // リフロー発生でアニメーションをリセット
+      container.classList.add("animate-card-switch");
+
+      document.getElementById("img-a").src = candA.img;
+      document.getElementById("name-a").textContent = candA.name;
+      document.getElementById("group-a").textContent = candA.group;
+
+      document.getElementById("img-b").src = candB.img;
+      document.getElementById("name-b").textContent = candB.name;
+      document.getElementById("group-b").textContent = candB.group;
+    }
+
+    function nextRound() {
+      currentPairIndex++;
+      if (currentPairIndex < pairings.length) {
+        updateBattleView();
+      } else {
+        showResults();
+      }
+    }
+
+    function selectCandidate(selectedIndex) {
+      clearAllButtonFocus();
+      const [idxA, idxB] = pairings[currentPairIndex];
+      const winnerIdx = selectedIndex === 0 ? idxA : idxB;
+      candidates[winnerIdx].score = (candidates[winnerIdx].score || 0) + 1;
+      selectionHistory.push({ addedTo: [winnerIdx] });
+      nextRound();
+    }
+
+    function selectBoth() {
+      clearAllButtonFocus();
+      const [idxA, idxB] = pairings[currentPairIndex];
+      candidates[idxA].score = (candidates[idxA].score || 0) + 1;
+      candidates[idxB].score = (candidates[idxB].score || 0) + 1;
+      selectionHistory.push({ addedTo: [idxA, idxB] });
+      nextRound();
+    }
+
+    function selectNeither() {
+      clearAllButtonFocus();
+      selectionHistory.push({ addedTo: [] });
+      nextRound();
+    }
+
+    function previousRound() {
+      if (currentPairIndex <= 0 || selectionHistory.length === 0) return;
+      clearAllButtonFocus();
+      
+      const lastAction = selectionHistory.pop();
+      if (lastAction && lastAction.addedTo) {
+        lastAction.addedTo.forEach(idx => {
+          candidates[idx].score = Math.max(0, (candidates[idx].score || 0) - 1);
+        });
+      }
+      
+      currentPairIndex--;
+      updateBattleView();
+    }
+
+    function showResults() {
+      clearAllButtonFocus();
+      document.getElementById("screen-battle").classList.add("hidden");
+      document.getElementById("screen-battle").classList.remove("flex");
+      document.getElementById("step-indicator").classList.add("hidden");
+      document.getElementById("screen-result").classList.remove("hidden");
+      document.getElementById("screen-result").classList.add("flex");
+
+      const sorted = [...candidates].sort((a, b) => (b.score || 0) - (a.score || 0) || Math.random() - 0.5);
+      const top9 = sorted.slice(0, 9);
+
+      const gridContainer = document.getElementById("result-grid");
+      gridContainer.innerHTML = "";
+
+      top9.forEach((item, index) => {
+        const card = document.createElement("div");
+        card.className = "bg-slate-800/90 rounded-xl overflow-hidden flex flex-col items-center p-1 text-center border border-slate-700/80 shadow-md";
+        card.innerHTML = `
+          <div class="w-full aspect-square overflow-hidden rounded-lg mb-1 bg-slate-900 relative">
+            <img src="${item.img}" alt="${item.name}" class="w-full h-full object-cover">
+            <span class="absolute top-1 left-1 bg-gradient-to-r from-sky-400 to-cyan-500 text-slate-950 text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-md">${index + 1}</span>
+          </div>
+          <span class="text-[10px] font-bold text-slate-100 line-clamp-1 w-full leading-tight">${item.name}</span>
+        `;
+        gridContainer.appendChild(card);
+      });
+    }
+
+    function resetDiagnosis() {
+      clearAllButtonFocus();
+      document.getElementById("screen-result").classList.add("hidden");
+      document.getElementById("screen-result").classList.remove("flex");
+      document.getElementById("screen-top").classList.remove("hidden");
+    }
+
+    function shareX() {
+      const text = encodeURIComponent("私の「ザセカ好き顔9選」を診断しました！\n");
+      const hashtags = encodeURIComponent("ザセカ好き顔9選,THESECOND");
+      const url = encodeURIComponent(window.location.href);
+      const xUrl = `https://twitter.com/intent/tweet?text=${text}&hashtags=${hashtags}&url=${url}`;
+      window.open(xUrl, "_blank");
+    }
+
+    function shareLINE() {
+      const url = encodeURIComponent(window.location.href);
+      const text = encodeURIComponent("ザセカ好き顔9選診断をやってみたよ！");
+      const lineUrl = `https://line.me/R/share?text=${text}%20${url}`;
+      window.open(lineUrl, "_blank");
+    }
+
+    function shareInstagram() {
+      showToast("画像を保存して、#ザセカ好き顔9選 を付けてInstagramにシェア！");
+      downloadResultImage();
+    }
+
+    function copyLink() {
+      const tempInput = document.createElement("input");
+      tempInput.value = window.location.href;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      try {
+        document.execCommand("copy");
+        showToast("診断ページのURLをコピーしました！");
+      } catch (err) {
+        showToast("URLのコピーに失敗しました", false);
+      }
+      document.body.removeChild(tempInput);
+    }
+
+    function downloadResultImage() {
+      const target = document.getElementById("result-grid-container");
+      showToast("画像を生成しています...");
+      
+      html2canvas(target, { useCORS: true, scale: 2 }).then(canvas => {
+        const link = document.createElement("a");
+        link.download = "ザセカ好き顔9選.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      }).catch(err => {
+        showToast("画像の生成に失敗しました。スクリーンショットをご利用ください。", false);
+      });
+    }
+  </script>
+</body>
+</html>
