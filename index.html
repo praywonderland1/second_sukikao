@@ -71,7 +71,7 @@
         <span class="bg-gradient-to-r from-sky-600 to-cyan-500 bg-clip-text text-transparent font-extrabold">THE SECOND 好き顔診断</span>
       </h1>
       <span id="step-indicator" class="text-xs bg-sky-50 text-sky-600 border border-sky-200 font-medium px-2.5 py-1 rounded-full hidden">
-        選択中: <span id="current-round">1</span> / <span id="total-rounds">75</span>
+        選択回数: <span id="current-round">0</span> 回
       </span>
     </div>
   </header>
@@ -122,8 +122,12 @@
 
     <!-- 2. Battle (Diagnosis) Screen -->
     <div id="screen-battle" class="hidden flex-col items-center">
-      <div class="w-full bg-slate-100 h-2.5 rounded-full mb-6 overflow-hidden border border-sky-100">
+      <div class="w-full bg-slate-100 h-2.5 rounded-full mb-1 overflow-hidden border border-sky-100">
         <div id="progress-bar" class="bg-gradient-to-r from-sky-400 to-cyan-500 h-full w-0 transition-all duration-300"></div>
+      </div>
+      <div class="w-full flex justify-between items-center mb-5 text-[11px] text-slate-400 font-medium px-1">
+        <span>ベスト9確定度</span>
+        <span id="certainty-text">0%</span>
       </div>
 
       <p class="text-center font-bold text-slate-700 text-base md:text-lg mb-5 flex items-center gap-2">
@@ -131,7 +135,7 @@
       </p>
 
       <!-- Matchup Cards Container -->
-      <div id="cards-container" class="grid grid-cols-2 gap-3 md:gap-6 w-full mb-4">
+      <div id="cards-container" class="grid grid-cols-2 gap-3 md:gap-6 w-full mb-3">
         <!-- Candidate A -->
         <button id="btn-card-a" onclick="selectCandidate(0)" class="candidate-card-hover bg-white rounded-2xl border-2 border-slate-100 p-2.5 md:p-4 transition-all duration-150 active:scale-95 flex flex-col items-center focus:outline-none shadow-sm cursor-pointer">
           <div class="w-full aspect-square rounded-xl overflow-hidden bg-slate-100 mb-2.5 relative border border-slate-100">
@@ -151,8 +155,8 @@
         </button>
       </div>
 
-      <!-- Additional Option Buttons (どっちも好き / わからない) -->
-      <div class="grid grid-cols-2 gap-3 w-full">
+      <!-- Option Buttons (どっちも好き / わからない) -->
+      <div class="grid grid-cols-2 gap-3 w-full mb-4">
         <button id="btn-both" onclick="selectBoth()" class="action-btn-hover bg-white text-sky-600 border-2 border-sky-100 font-bold py-3 px-4 rounded-xl text-xs md:text-sm transition duration-150 active:scale-95 flex items-center justify-center gap-2 shadow-sm focus:outline-none cursor-pointer">
           <i class="fa-solid fa-heart text-sky-400 text-sm"></i>
           <span>どっちも好き</span>
@@ -163,9 +167,9 @@
         </button>
       </div>
 
-      <!-- Undo / Back Button -->
-      <div class="mt-3 w-full flex justify-center">
-        <button id="btn-back" onclick="previousRound()" class="action-btn-hover bg-white text-slate-500 border border-slate-200 font-bold py-2 px-4 rounded-xl text-xs transition duration-150 active:scale-95 flex items-center justify-center gap-1.5 shadow-sm focus:outline-none cursor-pointer disabled:opacity-40 disabled:pointer-events-none">
+      <!-- Action Buttons (ひとつ戻る) -->
+      <div class="w-full flex justify-center">
+        <button id="btn-back" onclick="previousRound()" class="action-btn-hover bg-white text-slate-500 border border-slate-200 font-bold py-2.5 px-6 rounded-xl text-xs transition duration-150 active:scale-95 flex items-center justify-center gap-1.5 shadow-sm focus:outline-none cursor-pointer disabled:opacity-40 disabled:pointer-events-none">
           <i class="fa-solid fa-rotate-left text-slate-400"></i>
           <span>ひとつ戻る</span>
         </button>
@@ -234,10 +238,6 @@
   </footer>
 
   <script>
-    // =========================================================================
-    // 【候補者データのカスタマイズエリア】
-    // 下記の配列に名前・コンビ名・画像URLを設定してください（最低9名以上必要です）
-    // =========================================================================
     const INITIAL_CANDIDATES = [
       { id: 1, name: "田中一彦", group: "スーパーマラドーナ", img: "https://i.imgur.com/nn4gWHT.jpeg" },
       { id: 2, name: "武智", group: "スーパーマラドーナ", img: "https://i.imgur.com/ayQoBjO.jpeg" },
@@ -378,21 +378,18 @@
       { id: 137, name: "アイクぬわら", group: "超新塾", img: "https://i.imgur.com/Osgy67V.jpeg" }  
     ];
 
-    // マッチング回数を150回に設定し、精度を大幅に向上
-    const TOTAL_ROUNDS = 150;
-
-    // 候補者の対戦数に応じてKファクターを動的に変更（序盤は大まかに揺らし、終盤でレートを収束・安定させる）
     function getDynamicKFactor(matchCount) {
-      if (matchCount < 2) return 48; // 初期：大きな幅で大まかな強さを把握
-      if (matchCount < 4) return 32; // 中盤：標準的な変動
-      return 20;                     // 終盤：細かな調整と収束
+      if (matchCount < 3) return 48;
+      if (matchCount < 8) return 32;
+      return 20;
     }
 
     let candidates = [];
     let currentRoundIndex = 0;
     let currentPair = [0, 1];
     let pairHistory = [];
-    let stateHistory = []; // Undo（ひとつ戻る）機能用のステート履歴
+    let stateHistory = [];
+    let isFinished = false;
 
     function showToast(message, isSuccess = true) {
       const container = document.getElementById("toast-container");
@@ -426,7 +423,6 @@
         return;
       }
 
-      // Elo初期化＆配列をランダムシャッフル（初期順序による偏りを回避）
       const shuffled = [...INITIAL_CANDIDATES].sort(() => Math.random() - 0.5);
 
       candidates = shuffled.map(c => ({
@@ -438,6 +434,7 @@
       currentRoundIndex = 0;
       pairHistory = [];
       stateHistory = [];
+      isFinished = false;
 
       document.getElementById("screen-top").classList.add("hidden");
       document.getElementById("screen-battle").classList.remove("hidden");
@@ -447,53 +444,39 @@
       nextMatchup();
     }
 
-    // 高精度マッチメイキング（未登場者カバー＋接戦ペア優先スイスドロー方式）
     function getNextPair() {
       let bestPair = null;
       let bestScore = Infinity;
-
-      // 未登場者（matchCount === 0）の人数を確認
-      const unplayedCount = candidates.filter(c => c.matchCount === 0).length;
 
       for (let i = 0; i < candidates.length; i++) {
         for (let j = i + 1; j < candidates.length; j++) {
           const candI = candidates[i];
           const candJ = candidates[j];
 
-          let priorityBonus = 0;
-
-          if (unplayedCount > 0) {
-            // 未登場者が残っている場合は最優先選出
-            if (candI.matchCount === 0) priorityBonus -= 20000;
-            if (candJ.matchCount === 0) priorityBonus -= 20000;
-          } else {
-            // 全員1回以上対戦後は、対戦数が1回未満の者を優先補強
-            if (candI.matchCount < 2) priorityBonus -= 3000;
-            if (candJ.matchCount < 2) priorityBonus -= 3000;
-          }
-
-          // Elo差（実力が近い者同士の対戦でレーティング精度を最大化）
           const ratingDiff = Math.abs(candI.rating - candJ.rating);
           
-          // 同一ペアの重複対戦ペナルティ
           const timesPlayed = pairHistory.filter(p => 
             (p[0] === i && p[1] === j) || (p[0] === j && p[1] === i)
           ).length;
 
-          // 直近5ターン内の再戦防止
           const lastIndex = pairHistory.findLastIndex(p => 
             (p[0] === i && p[1] === j) || (p[0] === j && p[1] === i)
           );
-          const recencyPenalty = (lastIndex !== -1 && (pairHistory.length - lastIndex) <= 5) ? 50000 : 0;
+          const recencyPenalty = (lastIndex !== -1 && (pairHistory.length - lastIndex) <= 8) ? 50000 : 0;
 
-          // 全体対戦数の平準化
-          const totalMatches = candI.matchCount + candJ.matchCount;
+          let unplayedBonus = 0;
+          if (candI.matchCount === 0 || candJ.matchCount === 0) {
+            unplayedBonus = -1800;
+          } else if (candI.matchCount < 2 || candJ.matchCount < 2) {
+            unplayedBonus = -600;
+          }
 
-          // 全員登場後は Elo差（ratingDiff）の評価ウェイトを高めて接戦を増やす
-          const ratingWeight = (unplayedCount === 0) ? 2.2 : 1.0;
+          let topMatchBonus = 0;
+          if (candI.rating > 1520 && candJ.rating > 1520) {
+            topMatchBonus = -1200;
+          }
 
-          // 総合スコア計算（小さいほど優先）
-          const score = priorityBonus + (ratingDiff * ratingWeight) + (timesPlayed * 5000) + recencyPenalty + (totalMatches * 100) + (Math.random() * 10);
+          const score = ratingDiff + (timesPlayed * 12000) + recencyPenalty + unplayedBonus + topMatchBonus + (Math.random() * 25);
 
           if (score < bestScore) {
             bestScore = score;
@@ -502,7 +485,6 @@
         }
       }
 
-      // 左右（A/B）の表示位置をランダム化
       if (Math.random() > 0.5) {
         bestPair = [bestPair[1], bestPair[0]];
       }
@@ -511,28 +493,59 @@
     }
 
     function nextMatchup() {
-      if (currentRoundIndex >= TOTAL_ROUNDS) {
-        showResults();
-        return;
-      }
-
       currentPair = getNextPair();
       updateBattleView();
+    }
+
+    function calculateCertainty() {
+      if (candidates.length === 0) return 0;
+
+      const roundProgress = Math.min(1.0, currentRoundIndex / 120);
+      const roundScore = roundProgress * 45;
+
+      const sorted = [...candidates].sort((a, b) => b.rating - a.rating);
+      const gap = sorted[8].rating - sorted[9].rating;
+      const gapScore = Math.min(1.0, Math.max(0, gap) / 80) * 35;
+
+      const top12 = sorted.slice(0, 12);
+      const avgMatchesTop12 = top12.reduce((acc, c) => acc + c.matchCount, 0) / 12;
+      const matchScore = Math.min(1.0, avgMatchesTop12 / 5) * 20;
+
+      let total = Math.floor(roundScore + gapScore + matchScore);
+
+      if (currentRoundIndex >= 180) {
+        const extra = Math.floor(((currentRoundIndex - 180) / 20) * 15);
+        total = Math.max(total, 85 + extra);
+      }
+
+      if (currentRoundIndex >= 200) {
+        total = 100;
+      }
+
+      return Math.min(100, total);
     }
 
     function updateBattleView() {
       clearAllButtonFocus();
 
-      document.getElementById("current-round").textContent = currentRoundIndex + 1;
-      document.getElementById("total-rounds").textContent = TOTAL_ROUNDS;
+      document.getElementById("current-round").textContent = currentRoundIndex;
 
-      const progress = (currentRoundIndex / TOTAL_ROUNDS) * 100;
-      document.getElementById("progress-bar").style.width = `${progress}%`;
+      const certainty = calculateCertainty();
+      document.getElementById("progress-bar").style.width = `${certainty}%`;
+      document.getElementById("certainty-text").textContent = `${certainty}%`;
 
-      // 「ひとつ戻る」ボタン制御
+      if (certainty >= 100 && !isFinished) {
+        isFinished = true;
+        showToast("🎉 あなたの好き顔ベスト9が決定しました！");
+        setTimeout(() => {
+          showResults();
+        }, 500);
+        return;
+      }
+
       const btnBack = document.getElementById("btn-back");
       if (btnBack) {
-        if (currentRoundIndex > 0) {
+        if (stateHistory.length > 0) {
           btnBack.disabled = false;
           btnBack.classList.remove("opacity-40", "pointer-events-none");
         } else {
@@ -545,7 +558,6 @@
       const candA = candidates[idxA];
       const candB = candidates[idxB];
 
-      // カードアニメーション
       const container = document.getElementById("cards-container");
       container.classList.remove("animate-card-switch");
       void container.offsetWidth;
@@ -569,7 +581,7 @@
       });
     }
 
-    function applyEloUpdate(scoreA, scoreB) {
+    function applyEloUpdate(selectedIndex, type = 'win') {
       saveStateSnapshot();
 
       const [idxA, idxB] = currentPair;
@@ -578,17 +590,24 @@
       const rA = candA.rating;
       const rB = candB.rating;
 
-      // 期待勝率の計算
       const expectedA = 1 / (1 + Math.pow(10, (rB - rA) / 400));
       const expectedB = 1 / (1 + Math.pow(10, (rA - rB) / 400));
 
-      // 対戦数に応じた動的 K-Factor の適用
       const kA = getDynamicKFactor(candA.matchCount);
       const kB = getDynamicKFactor(candB.matchCount);
 
-      // Elo レートの更新
-      candA.rating = rA + kA * (scoreA - expectedA);
-      candB.rating = rB + kB * (scoreB - expectedB);
+      if (type === 'both') {
+        candA.rating += kA * (0.5 - expectedA);
+        candB.rating += kB * (0.5 - expectedB);
+      } else {
+        if (selectedIndex === 0) {
+          candA.rating += kA * (1 - expectedA);
+          candB.rating += kB * (0 - expectedB);
+        } else {
+          candA.rating += kA * (0 - expectedA);
+          candB.rating += kB * (1 - expectedB);
+        }
+      }
 
       candA.matchCount++;
       candB.matchCount++;
@@ -601,21 +620,16 @@
 
     function selectCandidate(selectedIndex) {
       clearAllButtonFocus();
-      if (selectedIndex === 0) {
-        applyEloUpdate(1, 0); // 候補Aの勝利
-      } else {
-        applyEloUpdate(0, 1); // 候補Bの勝利
-      }
+      applyEloUpdate(selectedIndex, 'win');
     }
 
     function selectBoth() {
       clearAllButtonFocus();
-      applyEloUpdate(0.5, 0.5); // 引き分け・両方好き
+      applyEloUpdate(-1, 'both');
     }
 
     function selectNeither() {
       clearAllButtonFocus();
-      // わからない：レート変更なしで記録のみ
       saveStateSnapshot();
       const [idxA, idxB] = currentPair;
       candidates[idxA].matchCount++;
@@ -632,7 +646,7 @@
       const previousState = stateHistory.pop();
       candidates = previousState.candidates;
       currentRoundIndex = previousState.currentRoundIndex;
-      currentPair = previousState.previousPair || previousState.currentPair;
+      currentPair = previousState.currentPair;
       pairHistory = previousState.pairHistory;
 
       updateBattleView();
@@ -640,13 +654,13 @@
 
     function showResults() {
       clearAllButtonFocus();
+
       document.getElementById("screen-battle").classList.add("hidden");
       document.getElementById("screen-battle").classList.remove("flex");
       document.getElementById("step-indicator").classList.add("hidden");
       document.getElementById("screen-result").classList.remove("hidden");
       document.getElementById("screen-result").classList.add("flex");
 
-      // Eloレーティングの降順でソート
       const sorted = [...candidates].sort((a, b) => b.rating - a.rating);
       const top9 = sorted.slice(0, 9);
 
@@ -658,7 +672,7 @@
         card.className = "bg-slate-800/90 rounded-xl overflow-hidden flex flex-col items-center p-1 text-center border border-slate-700/80 shadow-md";
         card.innerHTML = `
           <div class="w-full aspect-square overflow-hidden rounded-lg mb-1 bg-slate-900 relative">
-            <img src="${item.img}" alt="${item.name}" class="w-full h-full object-cover">
+            <img src="${item.img}" crossorigin="anonymous" alt="${item.name}" class="w-full h-full object-cover">
             <span class="absolute top-1 left-1 bg-gradient-to-r from-sky-400 to-cyan-500 text-slate-950 text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-md">${index + 1}</span>
           </div>
           <span class="text-[10px] font-bold text-slate-100 line-clamp-1 w-full leading-tight">${item.name}</span>
@@ -675,7 +689,7 @@
     }
 
     function shareX() {
-      const text = encodeURIComponent("私の「ザセカ好き顔9選」を診断しました！\n");
+      const text = encodeURIComponent("私の「ザセカ好き顔9選」が決まりました！✨\n");
       const hashtags = encodeURIComponent("ザセカ好き顔9選,THESECOND");
       const url = encodeURIComponent(window.location.href);
       const xUrl = `https://twitter.com/intent/tweet?text=${text}&hashtags=${hashtags}&url=${url}`;
@@ -683,8 +697,11 @@
     }
 
     function shareLINE() {
+      const sorted = [...candidates].sort((a, b) => b.rating - a.rating);
+      const top9 = sorted.slice(0, 9);
+      const listText = top9.slice(0, 3).map((item, idx) => `${idx + 1}位 ${item.name}`).join(' / ');
       const url = encodeURIComponent(window.location.href);
-      const text = encodeURIComponent("ザセカ好き顔9選診断をやってみたよ！");
+      const text = encodeURIComponent(`私の「ザセカ好き顔9選」結果（1〜3位: ${listText} ほか）`);
       const lineUrl = `https://line.me/R/share?text=${text}%20${url}`;
       window.open(lineUrl, "_blank");
     }
@@ -708,18 +725,37 @@
       document.body.removeChild(tempInput);
     }
 
-    function downloadResultImage() {
+    async function downloadResultImage() {
       const target = document.getElementById("result-grid-container");
       showToast("画像を生成しています...");
-      
-      html2canvas(target, { useCORS: true, scale: 2 }).then(canvas => {
+
+      try {
+        const imgs = target.querySelectorAll("img");
+        await Promise.all(Array.from(imgs).map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise(resolve => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        }));
+
+        const canvas = await html2canvas(target, {
+          useCORS: true,
+          allowTaint: false,
+          scale: 2,
+          backgroundColor: "#0f172a",
+          logging: false
+        });
+
         const link = document.createElement("a");
         link.download = "ザセカ好き顔9選.png";
         link.href = canvas.toDataURL("image/png");
         link.click();
-      }).catch(err => {
+        showToast("9選画像を保存しました！");
+      } catch (err) {
+        console.error(err);
         showToast("画像の生成に失敗しました。スクリーンショットをご利用ください。", false);
-      });
+      }
     }
   </script>
 </body>
