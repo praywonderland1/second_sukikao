@@ -1,1 +1,726 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ザセカ好き顔9選</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- html2canvas for image generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
+  <style>
+    .responsive-title {
+      font-size: clamp(1.25rem, 6vw, 2.5rem);
+      white-space: nowrap;
+      letter-spacing: -0.02em;
+    }
+    
+    .mic-icon-wrapper {
+      background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+      box-shadow: 0 4px 15px rgba(56, 189, 248, 0.25);
+    }
 
+    @keyframes toastIn {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .animate-toast {
+      animation: toastIn 0.25s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0.3; transform: scale(0.98); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .animate-card-switch {
+      animation: fadeIn 0.22s ease-out forwards;
+    }
+
+    /* タッチデバイスでのSticky Hover（ホバー状態の残存）を完全防止 */
+    @media (hover: hover) and (pointer: fine) {
+      .candidate-card-hover:hover {
+        border-color: #38bdf8 !important;
+        background-color: rgba(240, 249, 255, 0.6) !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+      }
+      .candidate-card-hover:hover img {
+        transform: scale(1.04);
+      }
+      .action-btn-hover:hover {
+        border-color: #7dd3fc !important;
+        background-color: #f0f9ff !important;
+      }
+    }
+
+    /* スマホ・タッチデバイスでのタップ時フォーカス枠・ハイライトの削除 */
+    button, div {
+      -webkit-tap-highlight-color: transparent !important;
+      outline: none !important;
+    }
+  </style>
+</head>
+<body class="bg-sky-50/50 text-slate-800 min-h-screen flex flex-col font-sans select-none">
+
+  <header class="bg-white/90 backdrop-blur-md border-b border-sky-100 sticky top-0 z-50">
+    <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+      <h1 class="font-bold text-slate-700 text-sm md:text-base flex items-center gap-2">
+        <span class="text-sky-500 text-base">🎙</span>
+        <span class="bg-gradient-to-r from-sky-600 to-cyan-500 bg-clip-text text-transparent font-extrabold">THE SECOND 好き顔診断</span>
+      </h1>
+      <span id="step-indicator" class="text-xs bg-sky-50 text-sky-600 border border-sky-200 font-medium px-2.5 py-1 rounded-full hidden">
+        選択中: <span id="current-round">1</span> / <span id="total-rounds">75</span>
+      </span>
+    </div>
+  </header>
+
+  <div id="toast-container" class="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 w-11/12 max-w-sm pointer-events-none"></div>
+
+  <main class="flex-grow max-w-2xl w-full mx-auto p-4 flex flex-col justify-center">
+
+    <!-- 1. Top Screen -->
+    <div id="screen-top" class="bg-white rounded-3xl shadow-sm border border-sky-100 p-6 md:p-8 text-center flex flex-col items-center">
+      <div class="w-20 h-20 mic-icon-wrapper rounded-2xl flex items-center justify-center mb-6 text-3xl border border-sky-200/60 transform hover:scale-105 transition duration-300">
+        🎙
+      </div>
+
+      <h2 class="responsive-title font-extrabold text-slate-800 mb-3 w-full text-center tracking-tight">
+        ザセカ好き顔9選
+      </h2>
+
+      <p class="text-slate-600 text-sm md:text-base mb-8 text-center leading-relaxed font-medium">
+        表示される2人から「好きな顔」を直感で選ぼう！<br>
+        あなたの好みの顔ベスト9を自動で作成します。
+      </p>
+
+      <button id="btn-start" onclick="startDiagnosis()" class="w-full max-w-xs bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-600 hover:to-cyan-600 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-sky-200 transition duration-200 text-base md:text-lg flex items-center justify-center gap-2 group active:scale-95 cursor-pointer">
+        <span>診断をスタート</span>
+        <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+      </button>
+
+      <div class="mt-10 pt-6 border-t border-slate-100 text-left w-full text-xs text-slate-400 space-y-2 leading-relaxed">
+        <p class="flex items-start gap-1.5">
+          <span class="select-none text-sky-400">◾︎</span>
+          <span>この診断は、「THE SECOND〜漫才トーナメント〜」の2023〜2026にて一度でもノックアウトステージに進出した漫才師(解散済み・コンビ活動終了済み除く)を対象にしています。</span>
+        </p>
+        <p class="flex items-start gap-1.5">
+          <span class="select-none text-sky-400">◾︎</span>
+          <span>2026年大会終了現在で、最新のノックアウトステージ進出年の写真を使用しています。</span>
+        </p>
+        <p class="flex items-start gap-1.5">
+          <span class="select-none text-sky-400">◾︎</span>
+          <span>THE SECONDおよび各所属事務所とは、一切関係ありません。</span>
+        </p>
+        <p class="flex items-start gap-1.5">
+          <span class="select-none text-sky-400">◾︎</span>
+          <span>非公式のファンメイドサイトです。予めご了承ください。</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- 2. Battle (Diagnosis) Screen -->
+    <div id="screen-battle" class="hidden flex-col items-center">
+      <div class="w-full bg-slate-100 h-2.5 rounded-full mb-6 overflow-hidden border border-sky-100">
+        <div id="progress-bar" class="bg-gradient-to-r from-sky-400 to-cyan-500 h-full w-0 transition-all duration-300"></div>
+      </div>
+
+      <p class="text-center font-bold text-slate-700 text-base md:text-lg mb-5 flex items-center gap-2">
+        <span class="text-sky-500">どちらの顔が好みですか？</span>
+      </p>
+
+      <!-- Matchup Cards Container -->
+      <div id="cards-container" class="grid grid-cols-2 gap-3 md:gap-6 w-full mb-4">
+        <!-- Candidate A -->
+        <button id="btn-card-a" onclick="selectCandidate(0)" class="candidate-card-hover bg-white rounded-2xl border-2 border-slate-100 p-2.5 md:p-4 transition-all duration-150 active:scale-95 flex flex-col items-center focus:outline-none shadow-sm cursor-pointer">
+          <div class="w-full aspect-square rounded-xl overflow-hidden bg-slate-100 mb-2.5 relative border border-slate-100">
+            <img id="img-a" src="" alt="候補A" class="w-full h-full object-cover transition duration-200">
+          </div>
+          <span id="name-a" class="font-bold text-slate-800 text-sm md:text-base line-clamp-1">--</span>
+          <span id="group-a" class="text-xs text-sky-600/70 font-medium line-clamp-1">--</span>
+        </button>
+
+        <!-- Candidate B -->
+        <button id="btn-card-b" onclick="selectCandidate(1)" class="candidate-card-hover bg-white rounded-2xl border-2 border-slate-100 p-2.5 md:p-4 transition-all duration-150 active:scale-95 flex flex-col items-center focus:outline-none shadow-sm cursor-pointer">
+          <div class="w-full aspect-square rounded-xl overflow-hidden bg-slate-100 mb-2.5 relative border border-slate-100">
+            <img id="img-b" src="" alt="候補B" class="w-full h-full object-cover transition duration-200">
+          </div>
+          <span id="name-b" class="font-bold text-slate-800 text-sm md:text-base line-clamp-1">--</span>
+          <span id="group-b" class="text-xs text-sky-600/70 font-medium line-clamp-1">--</span>
+        </button>
+      </div>
+
+      <!-- Additional Option Buttons (どっちも好き / わからない) -->
+      <div class="grid grid-cols-2 gap-3 w-full">
+        <button id="btn-both" onclick="selectBoth()" class="action-btn-hover bg-white text-sky-600 border-2 border-sky-100 font-bold py-3 px-4 rounded-xl text-xs md:text-sm transition duration-150 active:scale-95 flex items-center justify-center gap-2 shadow-sm focus:outline-none cursor-pointer">
+          <i class="fa-solid fa-heart text-sky-400 text-sm"></i>
+          <span>どっちも好き</span>
+        </button>
+        <button id="btn-neither" onclick="selectNeither()" class="action-btn-hover bg-white text-slate-500 border-2 border-slate-100 font-bold py-3 px-4 rounded-xl text-xs md:text-sm transition duration-150 active:scale-95 flex items-center justify-center gap-2 shadow-sm focus:outline-none cursor-pointer">
+          <i class="fa-solid fa-circle-question text-slate-400 text-sm"></i>
+          <span>わからない</span>
+        </button>
+      </div>
+
+      <!-- Undo / Back Button -->
+      <div class="mt-3 w-full flex justify-center">
+        <button id="btn-back" onclick="previousRound()" class="action-btn-hover bg-white text-slate-500 border border-slate-200 font-bold py-2 px-4 rounded-xl text-xs transition duration-150 active:scale-95 flex items-center justify-center gap-1.5 shadow-sm focus:outline-none cursor-pointer disabled:opacity-40 disabled:pointer-events-none">
+          <i class="fa-solid fa-rotate-left text-slate-400"></i>
+          <span>ひとつ戻る</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. Result Screen -->
+    <div id="screen-result" class="hidden flex-col items-center">
+      <div class="text-center mb-6">
+        <span class="text-xs font-bold text-sky-600 uppercase tracking-widest bg-sky-100/80 px-3 py-1 rounded-full border border-sky-200">Diagnosis Result</span>
+        <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800 mt-2">あなたの好き顔 9選</h2>
+      </div>
+
+      <div id="result-grid-container" class="bg-slate-900 p-3 md:p-4 rounded-3xl shadow-2xl w-full max-w-md mx-auto mb-6 border border-slate-800">
+        <div id="result-grid" class="grid grid-cols-3 gap-2">
+        </div>
+        <div class="text-right mt-2.5 pr-1 flex justify-between items-center px-1">
+          <span class="text-[9px] text-slate-500 font-medium">THE SECOND 好き顔診断</span>
+          <span class="text-[10px] text-sky-400 font-bold tracking-wide">#ザセカ好き顔9選</span>
+        </div>
+      </div>
+
+      <div class="w-full max-w-md bg-white rounded-2xl border border-sky-100 p-5 mb-6 text-center shadow-sm">
+        <p class="font-bold text-slate-700 text-sm mb-4 flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-share-nodes text-sky-500"></i>
+          <span>結果をSNSで共有する</span>
+        </p>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+          <button onclick="shareX()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold transition active:scale-95 cursor-pointer">
+            <i class="fa-brands fa-x-twitter text-lg mb-1"></i>
+            <span>Xでポスト</span>
+          </button>
+
+          <button onclick="shareLINE()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-[#06C755] hover:opacity-90 text-white text-xs font-bold transition active:scale-95 cursor-pointer">
+            <i class="fa-brands fa-line text-lg mb-1"></i>
+            <span>LINEで送信</span>
+          </button>
+
+          <button onclick="shareInstagram()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white text-xs font-bold hover:opacity-90 transition active:scale-95 cursor-pointer">
+            <i class="fa-brands fa-instagram text-lg mb-1"></i>
+            <span>Instagram</span>
+          </button>
+
+          <button onclick="copyLink()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition active:scale-95 cursor-pointer">
+            <i class="fa-solid fa-link text-lg mb-1 text-slate-500"></i>
+            <span>URLコピー</span>
+          </button>
+        </div>
+
+        <button onclick="downloadResultImage()" class="w-full py-3 px-4 bg-sky-50 text-sky-700 hover:bg-sky-100 font-bold text-xs md:text-sm rounded-xl transition flex items-center justify-center gap-2 border border-sky-200 active:scale-95 cursor-pointer">
+          <i class="fa-solid fa-download text-sky-500"></i>
+          <span>9選画像を保存する</span>
+        </button>
+      </div>
+
+      <button onclick="resetDiagnosis()" class="text-slate-400 hover:text-sky-600 text-sm font-semibold underline underline-offset-4 py-2 transition cursor-pointer">
+        もう一度やり直す
+      </button>
+    </div>
+
+  </main>
+
+  <footer class="py-4 text-center text-xs text-slate-400">
+    &copy; THE SECOND Fan Made Diagnosis
+  </footer>
+
+  <script>
+    // =========================================================================
+    // 【候補者データのカスタマイズエリア】
+    // 下記の配列に名前・コンビ名・画像URLを設定してください（最低9名以上必要です）
+    // =========================================================================
+    const INITIAL_CANDIDATES = [
+      { id: 1, name: "田中一彦", group: "スーパーマラドーナ", img: "https://i.imgur.com/nn4gWHT.jpeg" },
+      { id: 2, name: "武智", group: "スーパーマラドーナ", img: "https://i.imgur.com/ayQoBjO.jpeg" },
+      { id: 3, name: "小林圭輔", group: "金属バット", img: "https://i.imgur.com/kGDXCnv.jpeg" },
+      { id: 4, name: "友保隼平", group: "金属バット", img: "https://i.imgur.com/ug4JKW2.jpeg" },
+      { id: 5, name: "福田恵悟", group: "LLR", img: "https://i.imgur.com/iYZCYMn.jpeg" },
+      { id: 6, name: "伊藤智博", group: "LLR", img: "https://i.imgur.com/wxlxWtR.jpeg" },
+      { id: 7, name: "梅村賢太郎", group: "ラフ次元", img: "https://i.imgur.com/1XcrdWF.jpeg" },
+      { id: 8, name: "空道太郎", group: "ラフ次元", img: "https://i.imgur.com/hd0GVb7.jpeg" },
+      { id: 9, name: "大波康平", group: "タモンズ", img: "https://i.imgur.com/jzhpeJp.jpeg" },
+      { id: 10, name: "安部浩章", group: "タモンズ", img: "https://i.imgur.com/YujDaA9.jpeg" },
+      { id: 11, name: "西森洋一", group: "モンスターエンジン", img: "https://i.imgur.com/Z2FYWyi.jpeg" },
+      { id: 12, name: "大林健二", group: "モンスターエンジン", img: "https://i.imgur.com/9ssorHu.jpeg" },
+      { id: 13, name: "HG", group: "レイザーラモン", img: "https://i.imgur.com/9YBmvcY.jpeg" },
+      { id: 14, name: "RG", group: "レイザーラモン", img: "https://i.imgur.com/VUHTgNY.jpeg" },
+      { id: 15, name: "森下直人", group: "ななまがり", img: "https://i.imgur.com/gB9cWxR.jpeg" },
+      { id: 16, name: "初瀬悠太", group: "ななまがり", img: "https://i.imgur.com/IhM5Y6F.jpeg" },
+      { id: 17, name: "デロリアン林", group: "エル・カブキ", img: "https://i.imgur.com/Isrwtq1.jpeg" },
+      { id: 18, name: "エル上田", group: "エル・カブキ", img: "https://i.imgur.com/G7Y3DH5.jpeg" },
+      { id: 19, name: "前田登", group: "はりけ～んず", img: "https://i.imgur.com/uF94Eu0.jpeg" },
+      { id: 20, name: "新井義幸", group: "はりけ～んず", img: "https://i.imgur.com/zVGtx2O.jpeg" },
+      { id: 21, name: "中本幸一", group: "ツーナッカン", img: "https://i.imgur.com/o74GfZl.jpeg" },
+      { id: 22, name: "中山逸紀", group: "ツーナッカン", img: "https://i.imgur.com/tQQqX1K.jpeg" },
+      { id: 23, name: "パンチ浜崎", group: "ザ・パンチ", img: "https://i.imgur.com/4qsTLnw.jpeg" },
+      { id: 24, name: "ノーパンチ松尾", group: "ザ・パンチ", img: "https://i.imgur.com/SVD1dC5.jpeg" },
+      { id: 25, name: "瀬戸洋祐", group: "スマイル", img: "https://i.imgur.com/7JjbnUV.jpeg" },
+      { id: 26, name: "ウーイェイよしたか", group: "スマイル", img: "https://i.imgur.com/Jk4mASB.jpeg" },
+      { id: 27, name: "ヒーゴー", group: "セルライトスパ", img: "https://i.imgur.com/irmflf7.jpeg" },
+      { id: 28, name: "大須賀健剛", group: "セルライトスパ", img: "https://i.imgur.com/4I9ygXU.jpeg" },
+      { id: 29, name: "大西進", group: "黒帯", img: "https://i.imgur.com/Gh9UcMl.jpeg" },
+      { id: 30, name: "てらうち", group: "黒帯", img: "https://i.imgur.com/fPuK9AH.jpeg" }, 
+      { id: 31, name: "山口誠", group: "カナメストーン", img: "https://i.imgur.com/0c0EzbN.jpeg" }, 
+      { id: 32, name: "零士", group: "カナメストーン", img: "https://i.imgur.com/Es2jG1M.jpeg" }, 
+      { id: 33, name: "木下貴信", group: "パタパタママ", img: "https://i.imgur.com/EZCvJY0.jpeg" }, 
+      { id: 34, name: "下畑博史", group: "パタパタママ", img: "https://i.imgur.com/RydWLeF.jpeg" }, 
+      { id: 35, name: "嶋田修平", group: "シマッシュレコード", img: "https://i.imgur.com/qP4F0fJ.jpeg" }, 
+      { id: 36, name: "しまい", group: "シマッシュレコード", img: "https://i.imgur.com/5QgUUtQ.jpeg" }, 
+      { id: 37, name: "田渕章裕", group: "ちょんまげラーメン", img: "https://i.imgur.com/z517Xvy.jpeg" }, 
+      { id: 38, name: "きむ", group: "ちょんまげラーメン", img: "https://i.imgur.com/Ws2O87a.jpeg" }, 
+      { id: 39, name: "恋さん", group: "シャンプーハット", img: "https://i.imgur.com/xPVMIyg.jpeg" }, 
+      { id: 40, name: "てつじ", group: "シャンプーハット", img: "https://i.imgur.com/AqEI77D.jpeg" }, 
+      { id: 41, name: "幸", group: "Dr.ハインリッヒ", img: "https://i.imgur.com/QoSHGN7.jpeg" }, 
+      { id: 42, name: "彩", group: "Dr.ハインリッヒ", img: "https://i.imgur.com/PGpt1IV.jpeg" }, 
+      { id: 43, name: "こうへい", group: "吉田たち", img: "https://i.imgur.com/lH8oWFS.jpeg" }, 
+      { id: 44, name: "ゆうへい", group: "吉田たち", img: "https://i.imgur.com/YeyvB07.jpeg" }, 
+      { id: 45, name: "嶋仲拓巳", group: "ヤング", img: "https://i.imgur.com/H0SWaAd.jpeg" }, 
+      { id: 46, name: "寺田晃弘", group: "ヤング", img: "https://i.imgur.com/CtIdeNv.jpeg" }, 
+      { id: 47, name: "田邊孟徳", group: "タナからイケダ", img: "https://i.imgur.com/ZNwd15H.jpeg" }, 
+      { id: 48, name: "池田周平", group: "タナからイケダ", img: "https://i.imgur.com/yZerepD.jpeg" }, 
+      { id: 49, name: "高倉陵", group: "三拍子", img: "https://i.imgur.com/w6aQ1fy.jpeg" }, 
+      { id: 50, name: "久保孝真", group: "三拍子", img: "https://i.imgur.com/KYyij9Q.jpeg" }, 
+      { id: 51, name: "滝沢秀一", group: "マシンガンズ", img: "https://i.imgur.com/trvNeY2.jpeg" }, 
+      { id: 52, name: "西堀亮", group: "マシンガンズ", img: "https://i.imgur.com/YnxmsKA.jpeg" }, 
+      { id: 53, name: "秋月啓志", group: "高校ズ", img: "https://i.imgur.com/jJ87ww7.jpeg" }, 
+      { id: 54, name: "森大志", group: "高校ズ", img: "https://i.imgur.com/IIdAghw.jpeg" }, 
+      { id: 55, name: "しょうへい", group: "リニア", img: "https://i.imgur.com/4b1fKZW.jpeg" }, 
+      { id: 56, name: "酒井啓太", group: "リニア", img: "https://i.imgur.com/4ThnoKn.jpeg" }, 
+      { id: 57, name: "たーにー", group: "ハンジロウ", img: "https://i.imgur.com/Xhvbvx9.jpeg" }, 
+      { id: 58, name: "しゅうごパーク", group: "ハンジロウ", img: "https://i.imgur.com/PmqZ2FV.jpeg" }, 
+      { id: 59, name: "文田大介", group: "囲碁将棋", img: "https://i.imgur.com/5zjofT2.jpeg" }, 
+      { id: 60, name: "根建太一", group: "囲碁将棋", img: "https://i.imgur.com/sODuDcl.jpeg" }, 
+      { id: 61, name: "川原豪介", group: "ブルーリバー", img: "https://i.imgur.com/nxpPesv.jpeg" }, 
+      { id: 62, name: "青木淳也", group: "ブルーリバー", img: "https://i.imgur.com/jYtjdLp.jpeg" }, 
+      { id: 63, name: "多田智佑", group: "トット", img: "https://i.imgur.com/DagxjWu.jpeg" }, 
+      { id: 64, name: "桑原雅人", group: "トット", img: "https://i.imgur.com/nE2hDK4.jpeg" }, 
+      { id: 65, name: "木﨑太郎", group: "祇園", img: "https://i.imgur.com/bqTFmp1.jpeg" }, 
+      { id: 66, name: "櫻井健一朗", group: "祇園", img: "https://i.imgur.com/EVhFpV9.jpeg" }, 
+      { id: 67, name: "盛山晋太郎", group: "見取り図", img: "https://i.imgur.com/oVFsasp.jpeg" }, 
+      { id: 68, name: "リリー", group: "見取り図", img: "https://i.imgur.com/TSmIBVq.jpeg" }, 
+      { id: 69, name: "石田芳道", group: "ドドん", img: "https://i.imgur.com/Iy9xRCf.jpeg" }, 
+      { id: 70, name: "安田義孝", group: "ドドん", img: "https://i.imgur.com/uKlFEBA.jpeg" }, 
+      { id: 71, name: "関口まじめ", group: "アモーン", img: "https://i.imgur.com/ajl4Wm7.jpeg" }, 
+      { id: 72, name: "田村元樹", group: "アモーン", img: "https://i.imgur.com/1OdZ5bK.jpeg" }, 
+      { id: 73, name: "本田あやの", group: "本田兄妹", img: "https://i.imgur.com/Ba373HC.jpeg" }, 
+      { id: 74, name: "兄太郎", group: "本田兄妹", img: "https://i.imgur.com/5Pt7FtH.jpeg" }, 
+      { id: 75, name: "嶋川武秀", group: "母心", img: "https://i.imgur.com/s8IuRiJ.jpeg" }, 
+      { id: 76, name: "関あつし", group: "母心", img: "https://i.imgur.com/gvCqEYR.jpeg" }, 
+      { id: 77, name: "ぼんちおさむ", group: "ザ・ぼんち", img: "https://i.imgur.com/FEHjhjd.jpeg" }, 
+      { id: 78, name: "里見まさと", group: "ザ・ぼんち", img: "https://i.imgur.com/HrGVGHv.jpeg" }, 
+      { id: 79, name: "芝大輔", group: "モグライダー", img: "https://i.imgur.com/2eyDY8y.jpeg" }, 
+      { id: 80, name: "ともしげ", group: "モグライダー", img: "https://i.imgur.com/rcfLrvP.jpeg" }, 
+      { id: 81, name: "チャーミングじろうちゃん", group: "チャーミング", img: "https://i.imgur.com/vddAkem.jpeg" }, 
+      { id: 82, name: "野田ちゃん", group: "チャーミング", img: "https://i.imgur.com/1MU5MGL.jpeg" }, 
+      { id: 83, name: "子安裕樹", group: "ヘンダーソン", img: "https://i.imgur.com/aWxuInf.jpeg" }, 
+      { id: 84, name: "中村フー", group: "ヘンダーソン", img: "https://i.imgur.com/5KtoitE.jpeg" }, 
+      { id: 85, name: "後藤淳平", group: "ジャルジャル", img: "https://i.imgur.com/h7QGJOc.jpeg" }, 
+      { id: 86, name: "福徳秀介", group: "ジャルジャル", img: "https://i.imgur.com/m8eJyQA.jpeg" }, 
+      { id: 87, name: "たかのり", group: "ツートライブ", img: "https://i.imgur.com/fXuSVhi.jpeg" }, 
+      { id: 88, name: "周平魂", group: "ツートライブ", img: "https://i.imgur.com/aQzYUo4.jpeg" }, 
+      { id: 89, name: "木村卓寛", group: "天津", img: "https://i.imgur.com/Bkltde7.jpeg" }, 
+      { id: 90, name: "天津飯大郎", group: "天津", img: "https://i.imgur.com/wZwjrCw.jpeg" }, 
+      { id: 91, name: "タグ", group: "ダブルアート", img: "https://i.imgur.com/cSWPBlv.jpeg" }, 
+      { id: 92, name: "真べぇ", group: "ダブルアート", img: "https://i.imgur.com/jYeyNoG.jpeg" }, 
+      { id: 93, name: "又吉隆行", group: "三日月マンハッタン", img: "https://i.imgur.com/nhRSpgf.jpeg" }, 
+      { id: 94, name: "仲嶺巧", group: "三日月マンハッタン", img: "https://i.imgur.com/cIqWD93.jpeg" }, 
+      { id: 95, name: "おぐ", group: "ロビンフット", img: "https://i.imgur.com/DXujQyL.jpeg" }, 
+      { id: 96, name: "マー坊", group: "ロビンフット", img: "https://i.imgur.com/s79uuYt.jpeg" }, 
+      { id: 97, name: "白川悟実", group: "テンダラー", img: "https://i.imgur.com/yYdHhPb.jpeg" }, 
+      { id: 98, name: "浜本広晃", group: "テンダラー", img: "https://i.imgur.com/AciXB4F.jpeg" }, 
+      { id: 99, name: "えいじ", group: "インポッシブル", img: "https://i.imgur.com/T8PqMwR.jpeg" }, 
+      { id: 100, name: "ひるちゃん", group: "インポッシブル", img: "https://i.imgur.com/O90gtXT.jpeg" }, 
+      { id: 101, name: "多田健二", group: "COWCOW", img: "https://i.imgur.com/ThUYbLO.jpeg" }, 
+      { id: 102, name: "善し", group: "COWCOW", img: "https://i.imgur.com/CQqWDJS.jpeg" }, 
+      { id: 103, name: "岩崎う大", group: "かもめんたる", img: "https://i.imgur.com/jHsr7ax.jpeg" }, 
+      { id: 104, name: "槇尾ユウスケ", group: "かもめんたる", img: "https://i.imgur.com/EIRhVjG.jpeg" }, 
+      { id: 105, name: "ちゅうえい", group: "流れ星☆", img: "https://i.imgur.com/MiCd40y.jpeg" }, 
+      { id: 106, name: "たきうえ", group: "流れ星☆", img: "https://i.imgur.com/N57rOge.jpeg" }, 
+      { id: 107, name: "羽田昇平", group: "ショウショウ", img: "https://i.imgur.com/Mv6CJzm.jpeg" }, 
+      { id: 108, name: "羽田昇司", group: "ショウショウ", img: "https://i.imgur.com/q07Lb47.jpeg" }, 
+      { id: 109, name: "山本浩司", group: "タイムマシーン3号", img: "https://i.imgur.com/1eNpROz.jpeg" }, 
+      { id: 110, name: "関太", group: "タイムマシーン3号", img: "https://i.imgur.com/kAkJHmQ.jpeg" }, 
+      { id: 111, name: "よじょう", group: "ガクテンソク", img: "https://i.imgur.com/4dOSRTz.jpeg" }, 
+      { id: 112, name: "奥田修二", group: "ガクテンソク", img: "https://i.imgur.com/tjGXibJ.jpeg" }, 
+      { id: 113, name: "イーグル溝神", group: "超新塾", img: "https://i.imgur.com/C524oMI.jpeg" }, 
+      { id: 114, name: "タイガー福田", group: "超新塾", img: "https://i.imgur.com/yHqNPKJ.jpeg" }, 
+      { id: 115, name: "サンキュー安富", group: "超新塾", img: "https://i.imgur.com/9Egtzzg.jpeg" }, 
+      { id: 116, name: "ブー藤原", group: "超新塾", img: "https://i.imgur.com/SiJ8iXR.jpeg" }, 
+      { id: 117, name: "伊藤幸司", group: "ランジャタイ", img: "https://i.imgur.com/ajWeXVd.jpeg" }, 
+      { id: 118, name: "国崎和也", group: "ランジャタイ", img: "https://i.imgur.com/8azngWF.jpeg" }, 
+      { id: 119, name: "小堀裕之", group: "2丁拳銃", img: "https://i.imgur.com/qLI3YPb.jpeg" }, 
+      { id: 120, name: "川谷修士", group: "2丁拳銃", img: "https://i.imgur.com/L9mSZmq.jpeg" }, 
+      { id: 121, name: "井戸田潤", group: "スピードワゴン", img: "https://i.imgur.com/IaQU6UH.jpeg" }, 
+      { id: 122, name: "小沢一敬", group: "スピードワゴン", img: "https://i.imgur.com/EJNQLjF.jpeg" }, 
+      { id: 123, name: "小宮浩信", group: "三四郎", img: "https://i.imgur.com/vXZKGCe.jpeg" }, 
+      { id: 124, name: "相田周二", group: "三四郎", img: "https://i.imgur.com/XGVdUhp.jpeg" }, 
+      { id: 125, name: "中西茂樹", group: "なすなかにし", img: "https://i.imgur.com/x2Mj89J.jpeg" }, 
+      { id: 126, name: "那須晃行", group: "なすなかにし", img: "https://i.imgur.com/CGTe1Im.jpeg" }, 
+      { id: 127, name: "としみつ", group: "モダンタイムス", img: "https://i.imgur.com/FxVUdCs.jpeg" }, 
+      { id: 128, name: "川崎誠", group: "モダンタイムス", img: "https://i.imgur.com/QJF8fUX.jpeg" }, 
+      { id: 129, name: "上田浩二郎", group: "Hi-Hi", img: "https://i.imgur.com/KmPuZwi.jpeg" }, 
+      { id: 130, name: "岩崎一則", group: "Hi-Hi", img: "https://i.imgur.com/T9PdzYX.jpeg" }, 
+      { id: 131, name: "林健", group: "ギャロップ", img: "https://i.imgur.com/oi95BGn.jpeg" }, 
+      { id: 132, name: "毛利大亮", group: "ギャロップ", img: "https://i.imgur.com/5g7qRmz.jpeg" }, 
+      { id: 133, name: "亘健太郎", group: "フルーツポンチ", img: "https://i.imgur.com/Yn1K93p.jpeg" }, 
+      { id: 134, name: "村上健志", group: "フルーツポンチ", img: "https://i.imgur.com/RX2p3FJ.jpeg" }, 
+      { id: 135, name: "真栄田賢", group: "スリムクラブ", img: "https://i.imgur.com/ilRNK1R.jpeg" }, 
+      { id: 136, name: "内間政成", group: "スリムクラブ", img: "https://i.imgur.com/pqIz5yD.jpeg" },  
+      { id: 137, name: "アイクぬわら", group: "超新塾", img: "https://i.imgur.com/Osgy67V.jpeg" }  
+    ];
+
+    // マッチング回数を150回に設定し、精度を大幅に向上
+    const TOTAL_ROUNDS = 150;
+
+    // 候補者の対戦数に応じてKファクターを動的に変更（序盤は大まかに揺らし、終盤でレートを収束・安定させる）
+    function getDynamicKFactor(matchCount) {
+      if (matchCount < 2) return 48; // 初期：大きな幅で大まかな強さを把握
+      if (matchCount < 4) return 32; // 中盤：標準的な変動
+      return 20;                     // 終盤：細かな調整と収束
+    }
+
+    let candidates = [];
+    let currentRoundIndex = 0;
+    let currentPair = [0, 1];
+    let pairHistory = [];
+    let stateHistory = []; // Undo（ひとつ戻る）機能用のステート履歴
+
+    function showToast(message, isSuccess = true) {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      toast.className = `animate-toast pointer-events-auto p-3.5 rounded-2xl shadow-lg border text-xs md:text-sm font-bold flex items-center gap-2 mb-2 ${
+        isSuccess ? 'bg-slate-900 text-white border-slate-700' : 'bg-rose-500 text-white border-rose-600'
+      }`;
+      toast.innerHTML = `
+        <i class="${isSuccess ? 'fa-solid fa-circle-check text-sky-400' : 'fa-solid fa-circle-exclamation'} text-base"></i>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    }
+
+    function clearAllButtonFocus() {
+      if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+      }
+      const buttons = document.querySelectorAll('button');
+      buttons.forEach(btn => btn.blur());
+    }
+
+    function startDiagnosis() {
+      if (INITIAL_CANDIDATES.length < 9) {
+        showToast("候補者が9名未満のため診断を開始できません。", false);
+        return;
+      }
+
+      // Elo初期化＆配列をランダムシャッフル（初期順序による偏りを回避）
+      const shuffled = [...INITIAL_CANDIDATES].sort(() => Math.random() - 0.5);
+
+      candidates = shuffled.map(c => ({
+        ...c,
+        rating: 1500,
+        matchCount: 0
+      }));
+
+      currentRoundIndex = 0;
+      pairHistory = [];
+      stateHistory = [];
+
+      document.getElementById("screen-top").classList.add("hidden");
+      document.getElementById("screen-battle").classList.remove("hidden");
+      document.getElementById("screen-battle").classList.add("flex");
+      document.getElementById("step-indicator").classList.remove("hidden");
+
+      nextMatchup();
+    }
+
+    // 高精度マッチメイキング（未登場者カバー＋接戦ペア優先スイスドロー方式）
+    function getNextPair() {
+      let bestPair = null;
+      let bestScore = Infinity;
+
+      // 未登場者（matchCount === 0）の人数を確認
+      const unplayedCount = candidates.filter(c => c.matchCount === 0).length;
+
+      for (let i = 0; i < candidates.length; i++) {
+        for (let j = i + 1; j < candidates.length; j++) {
+          const candI = candidates[i];
+          const candJ = candidates[j];
+
+          let priorityBonus = 0;
+
+          if (unplayedCount > 0) {
+            // 未登場者が残っている場合は最優先選出
+            if (candI.matchCount === 0) priorityBonus -= 20000;
+            if (candJ.matchCount === 0) priorityBonus -= 20000;
+          } else {
+            // 全員1回以上対戦後は、対戦数が1回未満の者を優先補強
+            if (candI.matchCount < 2) priorityBonus -= 3000;
+            if (candJ.matchCount < 2) priorityBonus -= 3000;
+          }
+
+          // Elo差（実力が近い者同士の対戦でレーティング精度を最大化）
+          const ratingDiff = Math.abs(candI.rating - candJ.rating);
+          
+          // 同一ペアの重複対戦ペナルティ
+          const timesPlayed = pairHistory.filter(p => 
+            (p[0] === i && p[1] === j) || (p[0] === j && p[1] === i)
+          ).length;
+
+          // 直近5ターン内の再戦防止
+          const lastIndex = pairHistory.findLastIndex(p => 
+            (p[0] === i && p[1] === j) || (p[0] === j && p[1] === i)
+          );
+          const recencyPenalty = (lastIndex !== -1 && (pairHistory.length - lastIndex) <= 5) ? 50000 : 0;
+
+          // 全体対戦数の平準化
+          const totalMatches = candI.matchCount + candJ.matchCount;
+
+          // 全員登場後は Elo差（ratingDiff）の評価ウェイトを高めて接戦を増やす
+          const ratingWeight = (unplayedCount === 0) ? 2.2 : 1.0;
+
+          // 総合スコア計算（小さいほど優先）
+          const score = priorityBonus + (ratingDiff * ratingWeight) + (timesPlayed * 5000) + recencyPenalty + (totalMatches * 100) + (Math.random() * 10);
+
+          if (score < bestScore) {
+            bestScore = score;
+            bestPair = [i, j];
+          }
+        }
+      }
+
+      // 左右（A/B）の表示位置をランダム化
+      if (Math.random() > 0.5) {
+        bestPair = [bestPair[1], bestPair[0]];
+      }
+
+      return bestPair;
+    }
+
+    function nextMatchup() {
+      if (currentRoundIndex >= TOTAL_ROUNDS) {
+        showResults();
+        return;
+      }
+
+      currentPair = getNextPair();
+      updateBattleView();
+    }
+
+    function updateBattleView() {
+      clearAllButtonFocus();
+
+      document.getElementById("current-round").textContent = currentRoundIndex + 1;
+      document.getElementById("total-rounds").textContent = TOTAL_ROUNDS;
+
+      const progress = (currentRoundIndex / TOTAL_ROUNDS) * 100;
+      document.getElementById("progress-bar").style.width = `${progress}%`;
+
+      // 「ひとつ戻る」ボタン制御
+      const btnBack = document.getElementById("btn-back");
+      if (btnBack) {
+        if (currentRoundIndex > 0) {
+          btnBack.disabled = false;
+          btnBack.classList.remove("opacity-40", "pointer-events-none");
+        } else {
+          btnBack.disabled = true;
+          btnBack.classList.add("opacity-40", "pointer-events-none");
+        }
+      }
+
+      const [idxA, idxB] = currentPair;
+      const candA = candidates[idxA];
+      const candB = candidates[idxB];
+
+      // カードアニメーション
+      const container = document.getElementById("cards-container");
+      container.classList.remove("animate-card-switch");
+      void container.offsetWidth;
+      container.classList.add("animate-card-switch");
+
+      document.getElementById("img-a").src = candA.img;
+      document.getElementById("name-a").textContent = candA.name;
+      document.getElementById("group-a").textContent = candA.group;
+
+      document.getElementById("img-b").src = candB.img;
+      document.getElementById("name-b").textContent = candB.name;
+      document.getElementById("group-b").textContent = candB.group;
+    }
+
+    function saveStateSnapshot() {
+      stateHistory.push({
+        candidates: candidates.map(c => ({ ...c })),
+        currentRoundIndex: currentRoundIndex,
+        currentPair: [...currentPair],
+        pairHistory: pairHistory.map(p => [...p])
+      });
+    }
+
+    function applyEloUpdate(scoreA, scoreB) {
+      saveStateSnapshot();
+
+      const [idxA, idxB] = currentPair;
+      const candA = candidates[idxA];
+      const candB = candidates[idxB];
+      const rA = candA.rating;
+      const rB = candB.rating;
+
+      // 期待勝率の計算
+      const expectedA = 1 / (1 + Math.pow(10, (rB - rA) / 400));
+      const expectedB = 1 / (1 + Math.pow(10, (rA - rB) / 400));
+
+      // 対戦数に応じた動的 K-Factor の適用
+      const kA = getDynamicKFactor(candA.matchCount);
+      const kB = getDynamicKFactor(candB.matchCount);
+
+      // Elo レートの更新
+      candA.rating = rA + kA * (scoreA - expectedA);
+      candB.rating = rB + kB * (scoreB - expectedB);
+
+      candA.matchCount++;
+      candB.matchCount++;
+
+      pairHistory.push([...currentPair]);
+      currentRoundIndex++;
+
+      nextMatchup();
+    }
+
+    function selectCandidate(selectedIndex) {
+      clearAllButtonFocus();
+      if (selectedIndex === 0) {
+        applyEloUpdate(1, 0); // 候補Aの勝利
+      } else {
+        applyEloUpdate(0, 1); // 候補Bの勝利
+      }
+    }
+
+    function selectBoth() {
+      clearAllButtonFocus();
+      applyEloUpdate(0.5, 0.5); // 引き分け・両方好き
+    }
+
+    function selectNeither() {
+      clearAllButtonFocus();
+      // わからない：レート変更なしで記録のみ
+      saveStateSnapshot();
+      const [idxA, idxB] = currentPair;
+      candidates[idxA].matchCount++;
+      candidates[idxB].matchCount++;
+      pairHistory.push([...currentPair]);
+      currentRoundIndex++;
+      nextMatchup();
+    }
+
+    function previousRound() {
+      if (stateHistory.length === 0) return;
+      clearAllButtonFocus();
+
+      const previousState = stateHistory.pop();
+      candidates = previousState.candidates;
+      currentRoundIndex = previousState.currentRoundIndex;
+      currentPair = previousState.previousPair || previousState.currentPair;
+      pairHistory = previousState.pairHistory;
+
+      updateBattleView();
+    }
+
+    function showResults() {
+      clearAllButtonFocus();
+      document.getElementById("screen-battle").classList.add("hidden");
+      document.getElementById("screen-battle").classList.remove("flex");
+      document.getElementById("step-indicator").classList.add("hidden");
+      document.getElementById("screen-result").classList.remove("hidden");
+      document.getElementById("screen-result").classList.add("flex");
+
+      // Eloレーティングの降順でソート
+      const sorted = [...candidates].sort((a, b) => b.rating - a.rating);
+      const top9 = sorted.slice(0, 9);
+
+      const gridContainer = document.getElementById("result-grid");
+      gridContainer.innerHTML = "";
+
+      top9.forEach((item, index) => {
+        const card = document.createElement("div");
+        card.className = "bg-slate-800/90 rounded-xl overflow-hidden flex flex-col items-center p-1 text-center border border-slate-700/80 shadow-md";
+        card.innerHTML = `
+          <div class="w-full aspect-square overflow-hidden rounded-lg mb-1 bg-slate-900 relative">
+            <img src="${item.img}" alt="${item.name}" class="w-full h-full object-cover">
+            <span class="absolute top-1 left-1 bg-gradient-to-r from-sky-400 to-cyan-500 text-slate-950 text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-md">${index + 1}</span>
+          </div>
+          <span class="text-[10px] font-bold text-slate-100 line-clamp-1 w-full leading-tight">${item.name}</span>
+        `;
+        gridContainer.appendChild(card);
+      });
+    }
+
+    function resetDiagnosis() {
+      clearAllButtonFocus();
+      document.getElementById("screen-result").classList.add("hidden");
+      document.getElementById("screen-result").classList.remove("flex");
+      document.getElementById("screen-top").classList.remove("hidden");
+    }
+
+    function shareX() {
+      const text = encodeURIComponent("私の「ザセカ好き顔9選」を診断しました！\n");
+      const hashtags = encodeURIComponent("ザセカ好き顔9選,THESECOND");
+      const url = encodeURIComponent(window.location.href);
+      const xUrl = `https://twitter.com/intent/tweet?text=${text}&hashtags=${hashtags}&url=${url}`;
+      window.open(xUrl, "_blank");
+    }
+
+    function shareLINE() {
+      const url = encodeURIComponent(window.location.href);
+      const text = encodeURIComponent("ザセカ好き顔9選診断をやってみたよ！");
+      const lineUrl = `https://line.me/R/share?text=${text}%20${url}`;
+      window.open(lineUrl, "_blank");
+    }
+
+    function shareInstagram() {
+      showToast("画像を保存して、#ザセカ好き顔9選 を付けてInstagramにシェア！");
+      downloadResultImage();
+    }
+
+    function copyLink() {
+      const tempInput = document.createElement("input");
+      tempInput.value = window.location.href;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      try {
+        document.execCommand("copy");
+        showToast("診断ページのURLをコピーしました！");
+      } catch (err) {
+        showToast("URLのコピーに失敗しました", false);
+      }
+      document.body.removeChild(tempInput);
+    }
+
+    function downloadResultImage() {
+      const target = document.getElementById("result-grid-container");
+      showToast("画像を生成しています...");
+      
+      html2canvas(target, { useCORS: true, scale: 2 }).then(canvas => {
+        const link = document.createElement("a");
+        link.download = "ザセカ好き顔9選.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      }).catch(err => {
+        showToast("画像の生成に失敗しました。スクリーンショットをご利用ください。", false);
+      });
+    }
+  </script>
+</body>
+</html>
