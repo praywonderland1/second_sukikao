@@ -126,7 +126,7 @@
         <div id="progress-bar" class="bg-gradient-to-r from-sky-400 to-cyan-500 h-full w-0 transition-all duration-300"></div>
       </div>
       <div class="w-full flex justify-between items-center mb-5 text-[11px] text-slate-400 font-medium px-1">
-        <span>ベスト9確定度</span>
+        <span>ランキング確定度</span>
         <span id="certainty-text">0%</span>
       </div>
 
@@ -220,7 +220,7 @@
           </button>
         </div>
 
-        <button onclick="downloadResultImage()" class="w-full py-3 px-4 bg-sky-50 text-sky-700 hover:bg-sky-100 font-bold text-xs md:text-sm rounded-xl transition flex items-center justify-center gap-2 border border-sky-200 active:scale-95 cursor-pointer">
+        <button id="btn-download" onclick="downloadResultImage()" class="w-full py-3 px-4 bg-sky-50 text-sky-700 hover:bg-sky-100 font-bold text-xs md:text-sm rounded-xl transition flex items-center justify-center gap-2 border border-sky-200 active:scale-95 cursor-pointer">
           <i class="fa-solid fa-download text-sky-500"></i>
           <span>9選画像を保存する</span>
         </button>
@@ -672,7 +672,7 @@
         card.className = "bg-slate-800/90 rounded-xl overflow-hidden flex flex-col items-center p-1 text-center border border-slate-700/80 shadow-md";
         card.innerHTML = `
           <div class="w-full aspect-square overflow-hidden rounded-lg mb-1 bg-slate-900 relative">
-            <img src="${item.img}" crossorigin="anonymous" alt="${item.name}" class="w-full h-full object-cover">
+            <img src="${item.img}" data-src="${item.img}" alt="${item.name}" class="w-full h-full object-cover">
             <span class="absolute top-1 left-1 bg-gradient-to-r from-sky-400 to-cyan-500 text-slate-950 text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-md">${index + 1}</span>
           </div>
           <span class="text-[10px] font-bold text-slate-100 line-clamp-1 w-full leading-tight">${item.name}</span>
@@ -727,11 +727,55 @@
 
     async function downloadResultImage() {
       const target = document.getElementById("result-grid-container");
-      showToast("画像を生成しています...");
+      const btnDownload = document.getElementById("btn-download");
+      
+      showToast("9選画像を生成しています...");
+      if (btnDownload) btnDownload.disabled = true;
 
       try {
-        const imgs = target.querySelectorAll("img");
-        await Promise.all(Array.from(imgs).map(img => {
+        const imgs = Array.from(target.querySelectorAll("img"));
+
+        // 外部画像(Imgur)をBase64(Data URL)に変換してCORSキャッシュ汚染を確実に回避
+        await Promise.all(imgs.map(async (img) => {
+          const rawUrl = img.getAttribute("data-src") || img.src;
+          try {
+            // キャッシュ回避用のタイムスタンプパラメータを付与してfetch
+            const cacheBustedUrl = rawUrl + (rawUrl.includes('?') ? '&' : '?') + 'cb=' + Date.now();
+            const response = await fetch(cacheBustedUrl, { mode: 'cors' });
+            const blob = await response.blob();
+            
+            return new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                img.src = reader.result;
+                resolve();
+              };
+              reader.onerror = resolve;
+              reader.readAsDataURL(blob);
+            });
+          } catch (fetchErr) {
+            // 無料画像プロキシ経由のフォールバック処理
+            try {
+              const proxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(rawUrl)}&output=jpg`;
+              const response = await fetch(proxyUrl);
+              const blob = await response.blob();
+              return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  img.src = reader.result;
+                  resolve();
+                };
+                reader.onerror = resolve;
+                reader.readAsDataURL(blob);
+              });
+            } catch (proxyErr) {
+              console.warn("Proxy fallback failed", proxyErr);
+            }
+          }
+        }));
+
+        // 画像のDOM読み込み完了を確認
+        await Promise.all(imgs.map(img => {
           if (img.complete) return Promise.resolve();
           return new Promise(resolve => {
             img.onload = resolve;
@@ -741,20 +785,27 @@
 
         const canvas = await html2canvas(target, {
           useCORS: true,
-          allowTaint: false,
+          allowTaint: true,
           scale: 2,
           backgroundColor: "#0f172a",
           logging: false
         });
 
+        const imageUri = canvas.toDataURL("image/png");
+
         const link = document.createElement("a");
         link.download = "ザセカ好き顔9選.png";
-        link.href = canvas.toDataURL("image/png");
+        link.href = imageUri;
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
+
         showToast("9選画像を保存しました！");
       } catch (err) {
-        console.error(err);
-        showToast("画像の生成に失敗しました。スクリーンショットをご利用ください。", false);
+        console.error("Image generation error:", err);
+        showToast("画像の保存に失敗しました。画面スクショをご利用ください。", false);
+      } finally {
+        if (btnDownload) btnDownload.disabled = false;
       }
     }
   </script>
