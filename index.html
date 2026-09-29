@@ -385,9 +385,13 @@
       { id: 137, name: "アイクぬわら", group: "超新塾", img: "https://i.imgur.com/Osgy67V.jpeg" }  
     ];
 
-    // 直リンク画像URL（referrerpolicy="no-referrer"により直接表示可能）
+    // Imgur等のホットリンク制限（403エラー）を回避するためのプロキシ変換関数
     function getCORSProxyUrl(url) {
       if (!url) return '';
+      // ImgurのURLの場合は画像プロキシを経由してブロックを回避
+      if (url.includes('imgur.com')) {
+        return `https://images.weserv.nl/?url=${encodeURIComponent(url)}`;
+      }
       return url;
     }
 
@@ -411,6 +415,14 @@
     function handleImageError(imgElement) {
       imgElement.onerror = null;
       const candName = imgElement.getAttribute('data-name') || imgElement.alt || '';
+      const originalSrc = imgElement.getAttribute('data-original-src');
+      
+      // 最初のエラー時、まだプロキシを通していなければプロキシ経由を試す
+      if (originalSrc && !imgElement.src.includes('weserv.nl')) {
+        imgElement.src = `https://images.weserv.nl/?url=${encodeURIComponent(originalSrc)}`;
+        return;
+      }
+
       imgElement.src = getPlaceholderSvg(candName);
     }
 
@@ -600,14 +612,16 @@
 
       const imgA = document.getElementById("img-a");
       imgA.setAttribute('data-name', candA.name);
-      imgA.src = candA.img;
+      imgA.setAttribute('data-original-src', candA.img);
+      imgA.src = getCORSProxyUrl(candA.img);
 
       document.getElementById("name-a").textContent = candA.name;
       document.getElementById("group-a").textContent = candA.group;
 
       const imgB = document.getElementById("img-b");
       imgB.setAttribute('data-name', candB.name);
-      imgB.src = candB.img;
+      imgB.setAttribute('data-original-src', candB.img);
+      imgB.src = getCORSProxyUrl(candB.img);
 
       document.getElementById("name-b").textContent = candB.name;
       document.getElementById("group-b").textContent = candB.group;
@@ -742,7 +756,7 @@
         card.className = "bg-slate-800/90 rounded-xl overflow-hidden flex flex-col items-center p-1 text-center border border-slate-700/80 shadow-md";
         card.innerHTML = `
           <div class="w-full aspect-square overflow-hidden rounded-lg mb-1 bg-slate-900 relative">
-            <img src="${item.img}" alt="${item.name}" data-name="${item.name}" referrerpolicy="no-referrer" onerror="handleImageError(this)" class="w-full h-full object-cover">
+            <img src="${getCORSProxyUrl(item.img)}" alt="${item.name}" data-name="${item.name}" data-original-src="${item.img}" referrerpolicy="no-referrer" onerror="handleImageError(this)" class="w-full h-full object-cover">
             <span class="absolute top-1 left-1 bg-gradient-to-r from-sky-400 to-cyan-500 text-slate-950 text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-md">${index + 1}</span>
           </div>
           <span class="text-[10px] font-bold text-slate-100 line-clamp-1 w-full leading-tight">${item.name}</span>
