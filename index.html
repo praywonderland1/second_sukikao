@@ -721,6 +721,7 @@
       document.getElementById("screen-battle").classList.remove("flex");
       document.getElementById("step-indicator").classList.add("hidden");
 
+      // レーティングが高い順（1位〜）にソートして上位9名を取得
       const sorted = [...candidates].sort((a, b) => b.rating - a.rating);
       activeResultTop9 = sorted.slice(0, 9);
 
@@ -758,7 +759,14 @@
       const gridContainer = document.getElementById("result-grid");
       gridContainer.innerHTML = "";
 
-      top9List.forEach((item, index) => {
+      // 受け取ったリストがレーティング情報を持つ場合は高順位順（1位〜）に確実に並び替え
+      const sortedList = [...top9List];
+      if (sortedList.length > 0 && typeof sortedList[0].rating === 'number') {
+        sortedList.sort((a, b) => b.rating - a.rating);
+      }
+
+      // 順位（1位〜9位）に従って番号（index + 1）を割り振る
+      sortedList.forEach((item, index) => {
         const card = document.createElement("div");
         card.className = "bg-slate-800/90 rounded-xl overflow-hidden flex flex-col items-center p-1 text-center border border-slate-700/80 shadow-md";
         card.innerHTML = `
@@ -772,7 +780,7 @@
         gridContainer.appendChild(card);
       });
 
-      activeResultTop9 = top9List;
+      activeResultTop9 = sortedList;
     }
 
     function checkSharedUrlResult() {
@@ -810,7 +818,7 @@
 
     function shareX() {
       const text = encodeURIComponent("私の「ザセカ好き顔9選」が決まりました！✨\n");
-      const hashtags = encodeURIComponent("ザセカ好き顔9選");
+      const hashtags = encodeURIComponent("ザセカ好き顔9選,THESECOND");
       const url = encodeURIComponent(window.location.href);
       const xUrl = `https://twitter.com/intent/tweet?text=${text}&hashtags=${hashtags}&url=${url}`;
       window.open(xUrl, "_blank");
