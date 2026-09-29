@@ -30,11 +30,11 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0.3; transform: scale(0.98); }
+      from { opacity: 0.5; transform: scale(0.99); }
       to { opacity: 1; transform: scale(1); }
     }
     .animate-card-switch {
-      animation: fadeIn 0.22s ease-out forwards;
+      animation: fadeIn 0.1s ease-out forwards;
     }
 
     /* タッチデバイスでのSticky Hover（ホバー状態の残存）を完全防止 */
@@ -69,7 +69,7 @@
         <span class="bg-gradient-to-r from-sky-600 to-cyan-500 bg-clip-text text-transparent font-extrabold text-sm md:text-base">THE SECOND 好き顔診断</span>
       </div>
       <span id="step-indicator" class="text-xs bg-sky-50 text-sky-600 border border-sky-200 font-medium px-2.5 py-1 rounded-full hidden">
-        選択回数: <span id="current-round">0</span> 回
+        選択回数: <span id="current-round">0</span> / 200 回
       </span>
     </div>
   </header>
@@ -121,7 +121,7 @@
     <!-- 2. Battle (Diagnosis) Screen -->
     <div id="screen-battle" class="hidden flex-col items-center">
       <div class="w-full bg-slate-100 h-2.5 rounded-full mb-1 overflow-hidden border border-sky-100">
-        <div id="progress-bar" class="bg-gradient-to-r from-sky-400 to-cyan-500 h-full w-0 transition-all duration-300"></div>
+        <div id="progress-bar" class="bg-gradient-to-r from-sky-400 to-cyan-500 h-full w-0 transition-all duration-200"></div>
       </div>
       <div class="w-full flex justify-between items-center mb-5 text-[11px] text-slate-400 font-medium px-1">
         <span>ランキング確定度</span>
@@ -135,18 +135,18 @@
       <!-- Matchup Cards Container -->
       <div id="cards-container" class="grid grid-cols-2 gap-3 md:gap-6 w-full mb-3">
         <!-- Candidate A -->
-        <button id="btn-card-a" onclick="selectCandidate(0)" class="candidate-card-hover bg-white rounded-2xl border-2 border-slate-100 p-2.5 md:p-4 transition-all duration-150 active:scale-95 flex flex-col items-center focus:outline-none shadow-sm cursor-pointer">
+        <button id="btn-card-a" onclick="selectCandidate(0)" class="candidate-card-hover bg-white rounded-2xl border-2 border-slate-100 p-2.5 md:p-4 transition-all duration-100 active:scale-95 flex flex-col items-center focus:outline-none shadow-sm cursor-pointer">
           <div class="w-full aspect-square rounded-xl overflow-hidden bg-slate-100 mb-2.5 relative border border-slate-100 flex items-center justify-center">
-            <img id="img-a" src="" alt="候補A" class="w-full h-full object-cover transition duration-200" referrerpolicy="no-referrer" onerror="handleImageError(this)">
+            <img id="img-a" src="" alt="候補A" class="w-full h-full object-cover" referrerpolicy="no-referrer" onerror="handleImageError(this)">
           </div>
           <span id="name-a" class="font-bold text-slate-800 text-sm md:text-base line-clamp-1">--</span>
           <span id="group-a" class="text-xs text-sky-600/70 font-medium line-clamp-1">--</span>
         </button>
 
         <!-- Candidate B -->
-        <button id="btn-card-b" onclick="selectCandidate(1)" class="candidate-card-hover bg-white rounded-2xl border-2 border-slate-100 p-2.5 md:p-4 transition-all duration-150 active:scale-95 flex flex-col items-center focus:outline-none shadow-sm cursor-pointer">
+        <button id="btn-card-b" onclick="selectCandidate(1)" class="candidate-card-hover bg-white rounded-2xl border-2 border-slate-100 p-2.5 md:p-4 transition-all duration-100 active:scale-95 flex flex-col items-center focus:outline-none shadow-sm cursor-pointer">
           <div class="w-full aspect-square rounded-xl overflow-hidden bg-slate-100 mb-2.5 relative border border-slate-100 flex items-center justify-center">
-            <img id="img-b" src="" alt="候補B" class="w-full h-full object-cover transition duration-200" referrerpolicy="no-referrer" onerror="handleImageError(this)">
+            <img id="img-b" src="" alt="候補B" class="w-full h-full object-cover" referrerpolicy="no-referrer" onerror="handleImageError(this)">
           </div>
           <span id="name-b" class="font-bold text-slate-800 text-sm md:text-base line-clamp-1">--</span>
           <span id="group-b" class="text-xs text-sky-600/70 font-medium line-clamp-1">--</span>
@@ -155,11 +155,11 @@
 
       <!-- Option Buttons (どっちも好き / わからない) -->
       <div class="grid grid-cols-2 gap-3 w-full mb-4">
-        <button id="btn-both" onclick="selectBoth()" class="action-btn-hover bg-white text-sky-600 border-2 border-sky-100 font-bold py-3 px-4 rounded-xl text-xs md:text-sm transition duration-150 active:scale-95 flex items-center justify-center gap-2 shadow-sm focus:outline-none cursor-pointer">
+        <button id="btn-both" onclick="selectBoth()" class="action-btn-hover bg-white text-sky-600 border-2 border-sky-100 font-bold py-3 px-4 rounded-xl text-xs md:text-sm transition duration-100 active:scale-95 flex items-center justify-center gap-2 shadow-sm focus:outline-none cursor-pointer">
           <i class="fa-solid fa-heart text-sky-400 text-sm"></i>
           <span>どっちも好き</span>
         </button>
-        <button id="btn-neither" onclick="selectNeither()" class="action-btn-hover bg-white text-slate-500 border-2 border-slate-100 font-bold py-3 px-4 rounded-xl text-xs md:text-sm transition duration-150 active:scale-95 flex items-center justify-center gap-2 shadow-sm focus:outline-none cursor-pointer">
+        <button id="btn-neither" onclick="selectNeither()" class="action-btn-hover bg-white text-slate-500 border-2 border-slate-100 font-bold py-3 px-4 rounded-xl text-xs md:text-sm transition duration-100 active:scale-95 flex items-center justify-center gap-2 shadow-sm focus:outline-none cursor-pointer">
           <i class="fa-solid fa-circle-question text-slate-400 text-sm"></i>
           <span>わからない</span>
         </button>
@@ -167,7 +167,7 @@
 
       <!-- Action Buttons (ひとつ戻る) -->
       <div class="w-full flex justify-center">
-        <button id="btn-back" onclick="previousRound()" class="action-btn-hover bg-white text-slate-500 border border-slate-200 font-bold py-2.5 px-6 rounded-xl text-xs transition duration-150 active:scale-95 flex items-center justify-center gap-1.5 shadow-sm focus:outline-none cursor-pointer disabled:opacity-40 disabled:pointer-events-none">
+        <button id="btn-back" onclick="previousRound()" class="action-btn-hover bg-white text-slate-500 border border-slate-200 font-bold py-2.5 px-6 rounded-xl text-xs transition duration-100 active:scale-95 flex items-center justify-center gap-1.5 shadow-sm focus:outline-none cursor-pointer disabled:opacity-40 disabled:pointer-events-none">
           <i class="fa-solid fa-rotate-left text-slate-400"></i>
           <span>ひとつ戻る</span>
         </button>
@@ -246,7 +246,7 @@
 
   <script>
     const INITIAL_CANDIDATES = [
-       { id: 1, name: "田中一彦", group: "スーパーマラドーナ", img: "https://i.imgur.com/nn4gWHT.jpeg" },
+      { id: 1, name: "田中一彦", group: "スーパーマラドーナ", img: "https://i.imgur.com/nn4gWHT.jpeg" },
       { id: 2, name: "武智", group: "スーパーマラドーナ", img: "https://i.imgur.com/ayQoBjO.jpeg" },
       { id: 3, name: "小林圭輔", group: "金属バット", img: "https://i.imgur.com/kGDXCnv.jpeg" },
       { id: 4, name: "友保隼平", group: "金属バット", img: "https://i.imgur.com/ug4JKW2.jpeg" },
@@ -382,10 +382,19 @@
       { id: 134, name: "村上健志", group: "フルーツポンチ", img: "https://i.imgur.com/RX2p3FJ.jpeg" }, 
       { id: 135, name: "真栄田賢", group: "スリムクラブ", img: "https://i.imgur.com/ilRNK1R.jpeg" }, 
       { id: 136, name: "内間政成", group: "スリムクラブ", img: "https://i.imgur.com/pqIz5yD.jpeg" },  
-      { id: 137, name: "アイクぬわら", group: "超新塾", img: "https://i.imgur.com/Osgy67V.jpeg" }
-        
-       ];
-    
+      { id: 137, name: "アイクぬわら", group: "超新塾", img: "https://i.imgur.com/Osgy67V.jpeg" }  
+    ];
+
+    // 全画像のプリロード（キャッシュ）処理
+    function preloadAllImages() {
+      INITIAL_CANDIDATES.forEach(cand => {
+        if (cand.img) {
+          const img = new Image();
+          img.src = cand.img;
+        }
+      });
+    }
+
     function getPlaceholderSvg(name = '') {
       const char = name ? name.charAt(0) : '🎙';
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
@@ -406,14 +415,24 @@
     function handleImageError(imgElement) {
       imgElement.onerror = null;
       const candName = imgElement.getAttribute('data-name') || imgElement.alt || '';
+      const originalSrc = imgElement.getAttribute('data-original-src');
+      
+      // 最初のエラー時、プロキシ（weserv.nl）経由でフォールバック
+      if (originalSrc && !imgElement.src.includes('weserv.nl')) {
+        imgElement.src = `https://images.weserv.nl/?url=${encodeURIComponent(originalSrc)}`;
+        return;
+      }
+
       imgElement.src = getPlaceholderSvg(candName);
     }
 
+    // 200回対決に応じたより緻密なKファクター設定
     function getDynamicKFactor(matchCount) {
-      if (matchCount < 3) return 40;
-      if (matchCount < 7) return 28;
-      if (matchCount < 12) return 18;
-      return 12;
+      if (matchCount < 4) return 40;
+      if (matchCount < 8) return 28;
+      if (matchCount < 14) return 18;
+      if (matchCount < 22) return 12;
+      return 8;
     }
 
     let candidates = [];
@@ -455,6 +474,8 @@
         showToast("候補者が9名未満のため診断を開始できません。", false);
         return;
       }
+
+      preloadAllImages();
 
       if (window.location.search) {
         try {
@@ -508,11 +529,14 @@
           );
           const recencyPenalty = (lastIndex !== -1 && (pairHistory.length - lastIndex) <= 8) ? 50000 : 0;
 
+          // 未出場の候補者（matchCount === 0）を絶対最優先でペア選定するロジック
           let unplayedBonus = 0;
-          if (candI.matchCount === 0 || candJ.matchCount === 0) {
-            unplayedBonus = -1800;
+          if (candI.matchCount === 0 && candJ.matchCount === 0) {
+            unplayedBonus = -500000; // 両者未対戦は最優先で選定
+          } else if (candI.matchCount === 0 || candJ.matchCount === 0) {
+            unplayedBonus = -200000; // 片方が未対戦の場合も強力に優先
           } else if (candI.matchCount < 2 || candJ.matchCount < 2) {
-            unplayedBonus = -600;
+            unplayedBonus = -1200;
           }
 
           let topMatchBonus = 0;
@@ -544,14 +568,14 @@
     function calculateCertainty() {
       if (candidates.length === 0) return 0;
 
-      const TARGET_ROUNDS = 150;
+      const TARGET_ROUNDS = 200;
       const progressByRounds = Math.min(100, Math.floor((currentRoundIndex / TARGET_ROUNDS) * 100));
 
       const sorted = [...candidates].sort((a, b) => b.rating - a.rating);
       const gap = sorted[8].rating - sorted[9].rating;
       
-      // 150回到達、または120回以降で9位と10位の差が十分に開いた場合に確定
-      if (currentRoundIndex >= TARGET_ROUNDS || (currentRoundIndex >= 120 && gap > 180)) {
+      // 200回到達、または160回以降で9位と10位の差が十分に開いた場合に確定
+      if (currentRoundIndex >= TARGET_ROUNDS || (currentRoundIndex >= 160 && gap > 200)) {
         return 100;
       }
 
@@ -595,6 +619,7 @@
 
       const imgA = document.getElementById("img-a");
       imgA.setAttribute('data-name', candA.name);
+      imgA.setAttribute('data-original-src', candA.img);
       imgA.src = candA.img;
 
       document.getElementById("name-a").textContent = candA.name;
@@ -602,6 +627,7 @@
 
       const imgB = document.getElementById("img-b");
       imgB.setAttribute('data-name', candB.name);
+      imgB.setAttribute('data-original-src', candB.img);
       imgB.src = candB.img;
 
       document.getElementById("name-b").textContent = candB.name;
@@ -737,7 +763,7 @@
         card.className = "bg-slate-800/90 rounded-xl overflow-hidden flex flex-col items-center p-1 text-center border border-slate-700/80 shadow-md";
         card.innerHTML = `
           <div class="w-full aspect-square overflow-hidden rounded-lg mb-1 bg-slate-900 relative">
-            <img src="${item.img}" alt="${item.name}" data-name="${item.name}" referrerpolicy="no-referrer" onerror="handleImageError(this)" class="w-full h-full object-cover">
+            <img src="${item.img}" alt="${item.name}" data-name="${item.name}" data-original-src="${item.img}" referrerpolicy="no-referrer" onerror="handleImageError(this)" class="w-full h-full object-cover">
             <span class="absolute top-1 left-1 bg-gradient-to-r from-sky-400 to-cyan-500 text-slate-950 text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-md">${index + 1}</span>
           </div>
           <span class="text-[10px] font-bold text-slate-100 line-clamp-1 w-full leading-tight">${item.name}</span>
@@ -819,6 +845,7 @@
 
     window.onload = function() {
       checkSharedUrlResult();
+      preloadAllImages();
     };
   </script>
 </body>
