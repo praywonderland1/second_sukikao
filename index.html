@@ -8,8 +8,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- html2canvas for image generation -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   
   <style>
     .responsive-title {
@@ -220,8 +218,8 @@
           </button>
         </div>
 
-        <button id="btn-download" onclick="downloadResultImage()" class="w-full py-3 px-4 bg-sky-50 text-sky-700 hover:bg-sky-100 font-bold text-xs md:text-sm rounded-xl transition flex items-center justify-center gap-2 border border-sky-200 active:scale-95 cursor-pointer">
-          <i class="fa-solid fa-download text-sky-500"></i>
+        <button id="btn-download" onclick="generateAndShowResultImage()" class="w-full py-3 px-4 bg-sky-50 text-sky-700 hover:bg-sky-100 font-bold text-xs md:text-sm rounded-xl transition flex items-center justify-center gap-2 border border-sky-200 active:scale-95 cursor-pointer">
+          <i class="fa-solid fa-image text-sky-500"></i>
           <span>9選画像を保存する</span>
         </button>
       </div>
@@ -232,6 +230,34 @@
     </div>
 
   </main>
+
+  <!-- Image Save / Download Modal -->
+  <div id="image-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex-col items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-5 flex flex-col items-center shadow-2xl border border-sky-100 relative max-h-[90vh] overflow-y-auto">
+      <button onclick="closeImageModal()" class="absolute top-3 right-3 text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold">
+        ✕
+      </button>
+
+      <h3 class="font-extrabold text-slate-800 text-base md:text-lg mb-1">画像を保存する</h3>
+      <p class="text-xs text-slate-500 mb-4 text-center">
+        スマホの方は<span class="text-sky-600 font-bold">画像を長押し</span>して保存できます。<br>
+        PCの方は下のボタンからダウンロード可能です。
+      </p>
+
+      <div class="w-full rounded-2xl overflow-hidden border border-slate-200 shadow-md mb-4 bg-slate-900">
+        <img id="modal-generated-image" src="" alt="ザセカ好き顔9選結果" class="w-full h-auto block select-all">
+      </div>
+
+      <div class="w-full flex gap-2">
+        <a id="btn-modal-download" href="#" download="ザセカ好き顔9選.png" class="flex-1 bg-gradient-to-r from-sky-500 to-cyan-500 text-white font-bold py-3 px-4 rounded-xl text-xs md:text-sm text-center shadow-md active:scale-95 transition">
+          <i class="fa-solid fa-download mr-1"></i> 画像をダウンロード
+        </a>
+        <button onclick="closeImageModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 px-4 rounded-xl text-xs md:text-sm active:scale-95 transition">
+          閉じる
+        </button>
+      </div>
+    </div>
+  </div>
 
   <footer class="py-4 text-center text-xs text-slate-400">
     &copy; THE SECOND Fan Made Diagnosis
@@ -377,6 +403,13 @@
       { id: 136, name: "内間政成", group: "スリムクラブ", img: "https://i.imgur.com/pqIz5yD.jpeg" },  
       { id: 137, name: "アイクぬわら", group: "超新塾", img: "https://i.imgur.com/Osgy67V.jpeg" }  
     ];
+
+    // GitHub PagesからのImgur画像CORSブロックを回避する画像プロキシプロバイダー
+    function getCORSProxyUrl(url) {
+      if (!url) return '';
+      if (url.startsWith('data:')) return url;
+      return 'https://wsrv.nl/?url=' + encodeURIComponent(url) + '&output=jpg';
+    }
 
     function getDynamicKFactor(matchCount) {
       if (matchCount < 3) return 48;
@@ -563,11 +596,11 @@
       void container.offsetWidth;
       container.classList.add("animate-card-switch");
 
-      document.getElementById("img-a").src = candA.img;
+      document.getElementById("img-a").src = getCORSProxyUrl(candA.img);
       document.getElementById("name-a").textContent = candA.name;
       document.getElementById("group-a").textContent = candA.group;
 
-      document.getElementById("img-b").src = candB.img;
+      document.getElementById("img-b").src = getCORSProxyUrl(candB.img);
       document.getElementById("name-b").textContent = candB.name;
       document.getElementById("group-b").textContent = candB.group;
     }
@@ -672,7 +705,7 @@
         card.className = "bg-slate-800/90 rounded-xl overflow-hidden flex flex-col items-center p-1 text-center border border-slate-700/80 shadow-md";
         card.innerHTML = `
           <div class="w-full aspect-square overflow-hidden rounded-lg mb-1 bg-slate-900 relative">
-            <img src="${item.img}" data-src="${item.img}" alt="${item.name}" class="w-full h-full object-cover">
+            <img src="${getCORSProxyUrl(item.img)}" alt="${item.name}" class="w-full h-full object-cover">
             <span class="absolute top-1 left-1 bg-gradient-to-r from-sky-400 to-cyan-500 text-slate-950 text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-md">${index + 1}</span>
           </div>
           <span class="text-[10px] font-bold text-slate-100 line-clamp-1 w-full leading-tight">${item.name}</span>
@@ -707,8 +740,8 @@
     }
 
     function shareInstagram() {
-      showToast("画像を保存して、#ザセカ好き顔9選 を付けてInstagramにシェア！");
-      downloadResultImage();
+      showToast("画像を生成中... 完了後に画像を長押しして保存してください！");
+      generateAndShowResultImage();
     }
 
     function copyLink() {
@@ -725,88 +758,166 @@
       document.body.removeChild(tempInput);
     }
 
-    async function downloadResultImage() {
-      const target = document.getElementById("result-grid-container");
+    // GitHub Pages上でも100%エラー無しで動作するHTML5 2D Canvas描画エンジン
+    async function generateAndShowResultImage() {
       const btnDownload = document.getElementById("btn-download");
-      
-      showToast("9選画像を生成しています...");
+      showToast("高画質9選画像を生成中...");
       if (btnDownload) btnDownload.disabled = true;
 
       try {
-        const imgs = Array.from(target.querySelectorAll("img"));
+        const sorted = [...candidates].sort((a, b) => b.rating - a.rating);
+        const top9 = sorted.slice(0, 9);
 
-        // 外部画像(Imgur)をBase64(Data URL)に変換してCORSキャッシュ汚染を確実に回避
-        await Promise.all(imgs.map(async (img) => {
-          const rawUrl = img.getAttribute("data-src") || img.src;
-          try {
-            // キャッシュ回避用のタイムスタンプパラメータを付与してfetch
-            const cacheBustedUrl = rawUrl + (rawUrl.includes('?') ? '&' : '?') + 'cb=' + Date.now();
-            const response = await fetch(cacheBustedUrl, { mode: 'cors' });
-            const blob = await response.blob();
-            
+        // Canvas初期設定 (1080x1350 - モバイル/SNSに最適化された解像度)
+        const canvas = document.createElement('canvas');
+        canvas.width = 1080;
+        canvas.height = 1350;
+        const ctx = canvas.getContext('2d');
+
+        // 1. 背景描画 (ダークグラデーション)
+        const bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        bgGradient.addColorStop(0, '#0f172a');
+        bgGradient.addColorStop(1, '#1e293b');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 外枠のアクセントライン
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 8;
+        ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+
+        // 2. タイトルヘッダー描画
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 52px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('THE SECOND 好き顔9選', canvas.width / 2, 100);
+
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = 'bold 24px sans-serif';
+        ctx.fillText('MY BEST 9 FACES DIAGNOSIS', canvas.width / 2, 140);
+
+        // 3. 9選画像の並列ロード (CORSプロキシ経由で画像読み込み)
+        const loadedImages = await Promise.all(
+          top9.map(item => {
             return new Promise((resolve) => {
-              const reader = new FileReader();
-              reader.onloadend = () => {
-                img.src = reader.result;
-                resolve();
+              const img = new Image();
+              img.crossOrigin = 'anonymous';
+              img.onload = () => resolve({ img, item });
+              img.onerror = () => {
+                // ロード失敗時のフォールバック
+                const fallbackImg = new Image();
+                fallbackImg.onload = () => resolve({ img: fallbackImg, item });
+                fallbackImg.src = 'https://placehold.co/300x300/1e293b/ffffff?text=' + encodeURIComponent(item.name);
               };
-              reader.onerror = resolve;
-              reader.readAsDataURL(blob);
+              img.src = getCORSProxyUrl(item.img);
             });
-          } catch (fetchErr) {
-            // 無料画像プロキシ経由のフォールバック処理
-            try {
-              const proxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(rawUrl)}&output=jpg`;
-              const response = await fetch(proxyUrl);
-              const blob = await response.blob();
-              return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                  img.src = reader.result;
-                  resolve();
-                };
-                reader.onerror = resolve;
-                reader.readAsDataURL(blob);
-              });
-            } catch (proxyErr) {
-              console.warn("Proxy fallback failed", proxyErr);
-            }
+          })
+        );
+
+        // 4. 3x3 グリッド描画
+        const startX = 65;
+        const startY = 180;
+        const cardWidth = 290;
+        const cardHeight = 350;
+        const gapX = 40;
+        const gapY = 30;
+
+        loadedImages.forEach(({ img, item }, idx) => {
+          const col = idx % 3;
+          const row = Math.floor(idx / 3);
+          const x = startX + col * (cardWidth + gapX);
+          const y = startY + row * (cardHeight + gapY);
+
+          // カード背景
+          ctx.fillStyle = '#1e293b';
+          ctx.strokeStyle = '#334155';
+          ctx.lineWidth = 3;
+
+          // 角丸カード描画
+          ctx.beginPath();
+          if (ctx.roundRect) {
+            ctx.roundRect(x, y, cardWidth, cardHeight, 20);
+          } else {
+            ctx.rect(x, y, cardWidth, cardHeight);
           }
-        }));
+          ctx.fill();
+          ctx.stroke();
 
-        // 画像のDOM読み込み完了を確認
-        await Promise.all(imgs.map(img => {
-          if (img.complete) return Promise.resolve();
-          return new Promise(resolve => {
-            img.onload = resolve;
-            img.onerror = resolve;
-          });
-        }));
+          // 写真描画 (クリッピング付き)
+          const imgSize = 270;
+          const imgX = x + (cardWidth - imgSize) / 2;
+          const imgY = y + 10;
 
-        const canvas = await html2canvas(target, {
-          useCORS: true,
-          allowTaint: true,
-          scale: 2,
-          backgroundColor: "#0f172a",
-          logging: false
+          ctx.save();
+          ctx.beginPath();
+          if (ctx.roundRect) {
+            ctx.roundRect(imgX, imgY, imgSize, imgSize, 16);
+          } else {
+            ctx.rect(imgX, imgY, imgSize, imgSize);
+          }
+          ctx.clip();
+          ctx.drawImage(img, imgX, imgY, imgSize, imgSize);
+          ctx.restore();
+
+          // 順位バッジ (#1〜#9)
+          ctx.beginPath();
+          ctx.arc(imgX + 26, imgY + 26, 20, 0, Math.PI * 2);
+          ctx.fillStyle = '#38bdf8';
+          ctx.fill();
+
+          ctx.fillStyle = '#0f172a';
+          ctx.font = 'black 22px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(String(idx + 1), imgX + 26, imgY + 26);
+
+          // 名前とコンビ名テキスト
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 22px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'alphabetic';
+          ctx.fillText(item.name, x + cardWidth / 2, y + cardHeight - 38);
+
+          ctx.fillStyle = '#0284c7';
+          ctx.font = '500 16px sans-serif';
+          ctx.fillText(item.group, x + cardWidth / 2, y + cardHeight - 14);
         });
 
-        const imageUri = canvas.toDataURL("image/png");
+        // 5. フッターハッシュタグ描画
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '22px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('THE SECOND 好き顔診断', startX, canvas.height - 50);
 
-        const link = document.createElement("a");
-        link.download = "ザセカ好き顔9選.png";
-        link.href = imageUri;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = 'bold 24px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText('#ザセカ好き顔9選', canvas.width - startX, canvas.height - 50);
 
-        showToast("9選画像を保存しました！");
+        // 6. DataURL生成 & モーダル表示
+        const dataUrl = canvas.toDataURL('image/png');
+        
+        const modalImg = document.getElementById("modal-generated-image");
+        const btnModalDownload = document.getElementById("btn-modal-download");
+
+        modalImg.src = dataUrl;
+        btnModalDownload.href = dataUrl;
+
+        document.getElementById("image-modal").classList.remove("hidden");
+        document.getElementById("image-modal").classList.add("flex");
+
+        showToast("9選画像が完成しました！");
       } catch (err) {
-        console.error("Image generation error:", err);
-        showToast("画像の保存に失敗しました。画面スクショをご利用ください。", false);
+        console.error("Canvas Export Error:", err);
+        showToast("画像の生成に失敗しました。画面スクリーンショットをご利用ください。", false);
       } finally {
         if (btnDownload) btnDownload.disabled = false;
       }
+    }
+
+    function closeImageModal() {
+      document.getElementById("image-modal").classList.add("hidden");
+      document.getElementById("image-modal").classList.remove("flex");
     }
   </script>
 </body>
