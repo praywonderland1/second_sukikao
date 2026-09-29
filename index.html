@@ -246,7 +246,7 @@
 
   <script>
     const INITIAL_CANDIDATES = [
-      { id: 1, name: "田中一彦", group: "スーパーマラドーナ", img: "https://i.imgur.com/nn4gWHT.jpeg" },
+       { id: 1, name: "田中一彦", group: "スーパーマラドーナ", img: "https://i.imgur.com/nn4gWHT.jpeg" },
       { id: 2, name: "武智", group: "スーパーマラドーナ", img: "https://i.imgur.com/ayQoBjO.jpeg" },
       { id: 3, name: "小林圭輔", group: "金属バット", img: "https://i.imgur.com/kGDXCnv.jpeg" },
       { id: 4, name: "友保隼平", group: "金属バット", img: "https://i.imgur.com/ug4JKW2.jpeg" },
@@ -382,19 +382,10 @@
       { id: 134, name: "村上健志", group: "フルーツポンチ", img: "https://i.imgur.com/RX2p3FJ.jpeg" }, 
       { id: 135, name: "真栄田賢", group: "スリムクラブ", img: "https://i.imgur.com/ilRNK1R.jpeg" }, 
       { id: 136, name: "内間政成", group: "スリムクラブ", img: "https://i.imgur.com/pqIz5yD.jpeg" },  
-      { id: 137, name: "アイクぬわら", group: "超新塾", img: "https://i.imgur.com/Osgy67V.jpeg" }  
-    ];
-
-    // Imgur等のホットリンク制限（403エラー）を回避するためのプロキシ変換関数
-    function getCORSProxyUrl(url) {
-      if (!url) return '';
-      // ImgurのURLの場合は画像プロキシを経由してブロックを回避
-      if (url.includes('imgur.com')) {
-        return `https://images.weserv.nl/?url=${encodeURIComponent(url)}`;
-      }
-      return url;
-    }
-
+      { id: 137, name: "アイクぬわら", group: "超新塾", img: "https://i.imgur.com/Osgy67V.jpeg" }
+        
+       ];
+    
     function getPlaceholderSvg(name = '') {
       const char = name ? name.charAt(0) : '🎙';
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
@@ -415,14 +406,6 @@
     function handleImageError(imgElement) {
       imgElement.onerror = null;
       const candName = imgElement.getAttribute('data-name') || imgElement.alt || '';
-      const originalSrc = imgElement.getAttribute('data-original-src');
-      
-      // 最初のエラー時、まだプロキシを通していなければプロキシ経由を試す
-      if (originalSrc && !imgElement.src.includes('weserv.nl')) {
-        imgElement.src = `https://images.weserv.nl/?url=${encodeURIComponent(originalSrc)}`;
-        return;
-      }
-
       imgElement.src = getPlaceholderSvg(candName);
     }
 
@@ -612,16 +595,14 @@
 
       const imgA = document.getElementById("img-a");
       imgA.setAttribute('data-name', candA.name);
-      imgA.setAttribute('data-original-src', candA.img);
-      imgA.src = getCORSProxyUrl(candA.img);
+      imgA.src = candA.img;
 
       document.getElementById("name-a").textContent = candA.name;
       document.getElementById("group-a").textContent = candA.group;
 
       const imgB = document.getElementById("img-b");
       imgB.setAttribute('data-name', candB.name);
-      imgB.setAttribute('data-original-src', candB.img);
-      imgB.src = getCORSProxyUrl(candB.img);
+      imgB.src = candB.img;
 
       document.getElementById("name-b").textContent = candB.name;
       document.getElementById("group-b").textContent = candB.group;
@@ -756,7 +737,7 @@
         card.className = "bg-slate-800/90 rounded-xl overflow-hidden flex flex-col items-center p-1 text-center border border-slate-700/80 shadow-md";
         card.innerHTML = `
           <div class="w-full aspect-square overflow-hidden rounded-lg mb-1 bg-slate-900 relative">
-            <img src="${getCORSProxyUrl(item.img)}" alt="${item.name}" data-name="${item.name}" data-original-src="${item.img}" referrerpolicy="no-referrer" onerror="handleImageError(this)" class="w-full h-full object-cover">
+            <img src="${item.img}" alt="${item.name}" data-name="${item.name}" referrerpolicy="no-referrer" onerror="handleImageError(this)" class="w-full h-full object-cover">
             <span class="absolute top-1 left-1 bg-gradient-to-r from-sky-400 to-cyan-500 text-slate-950 text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-md">${index + 1}</span>
           </div>
           <span class="text-[10px] font-bold text-slate-100 line-clamp-1 w-full leading-tight">${item.name}</span>
