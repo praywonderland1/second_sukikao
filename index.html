@@ -64,10 +64,10 @@
 
   <header class="bg-white/90 backdrop-blur-md border-b border-sky-100 sticky top-0 z-50">
     <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-      <h1 class="font-bold text-slate-700 text-sm md:text-base flex items-center gap-2">
+      <div class="flex items-center gap-2 cursor-pointer" onclick="resetDiagnosis()">
         <span class="text-sky-500 text-base">🎙</span>
-        <span class="bg-gradient-to-r from-sky-600 to-cyan-500 bg-clip-text text-transparent font-extrabold">THE SECOND 好き顔診断</span>
-      </h1>
+        <span class="bg-gradient-to-r from-sky-600 to-cyan-500 bg-clip-text text-transparent font-extrabold text-sm md:text-base">THE SECOND 好き顔診断</span>
+      </div>
       <span id="step-indicator" class="text-xs bg-sky-50 text-sky-600 border border-sky-200 font-medium px-2.5 py-1 rounded-full hidden">
         選択回数: <span id="current-round">0</span> 回
       </span>
@@ -136,8 +136,8 @@
       <div id="cards-container" class="grid grid-cols-2 gap-3 md:gap-6 w-full mb-3">
         <!-- Candidate A -->
         <button id="btn-card-a" onclick="selectCandidate(0)" class="candidate-card-hover bg-white rounded-2xl border-2 border-slate-100 p-2.5 md:p-4 transition-all duration-150 active:scale-95 flex flex-col items-center focus:outline-none shadow-sm cursor-pointer">
-          <div class="w-full aspect-square rounded-xl overflow-hidden bg-slate-100 mb-2.5 relative border border-slate-100">
-            <img id="img-a" src="" alt="候補A" class="w-full h-full object-cover transition duration-200">
+          <div class="w-full aspect-square rounded-xl overflow-hidden bg-slate-100 mb-2.5 relative border border-slate-100 flex items-center justify-center">
+            <img id="img-a" src="" alt="候補A" class="w-full h-full object-cover transition duration-200" referrerpolicy="no-referrer" onerror="handleImageError(this)">
           </div>
           <span id="name-a" class="font-bold text-slate-800 text-sm md:text-base line-clamp-1">--</span>
           <span id="group-a" class="text-xs text-sky-600/70 font-medium line-clamp-1">--</span>
@@ -145,8 +145,8 @@
 
         <!-- Candidate B -->
         <button id="btn-card-b" onclick="selectCandidate(1)" class="candidate-card-hover bg-white rounded-2xl border-2 border-slate-100 p-2.5 md:p-4 transition-all duration-150 active:scale-95 flex flex-col items-center focus:outline-none shadow-sm cursor-pointer">
-          <div class="w-full aspect-square rounded-xl overflow-hidden bg-slate-100 mb-2.5 relative border border-slate-100">
-            <img id="img-b" src="" alt="候補B" class="w-full h-full object-cover transition duration-200">
+          <div class="w-full aspect-square rounded-xl overflow-hidden bg-slate-100 mb-2.5 relative border border-slate-100 flex items-center justify-center">
+            <img id="img-b" src="" alt="候補B" class="w-full h-full object-cover transition duration-200" referrerpolicy="no-referrer" onerror="handleImageError(this)">
           </div>
           <span id="name-b" class="font-bold text-slate-800 text-sm md:text-base line-clamp-1">--</span>
           <span id="group-b" class="text-xs text-sky-600/70 font-medium line-clamp-1">--</span>
@@ -176,11 +176,22 @@
 
     <!-- 3. Result Screen -->
     <div id="screen-result" class="hidden flex-col items-center">
-      <div class="text-center mb-6">
-        <span class="text-xs font-bold text-sky-600 uppercase tracking-widest bg-sky-100/80 px-3 py-1 rounded-full border border-sky-200">Diagnosis Result</span>
-        <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800 mt-2">あなたの好き顔 9選</h2>
+      
+      <!-- 共有リンクアクセス時のバナー -->
+      <div id="shared-notice" class="hidden w-full max-w-md bg-gradient-to-r from-sky-500 to-cyan-500 text-white rounded-2xl p-4 mb-5 text-center shadow-md">
+        <p class="text-xs md:text-sm font-bold mb-2.5">この結果は共有された「好き顔9選」です！</p>
+        <button onclick="resetDiagnosis()" class="w-full bg-white text-slate-800 font-extrabold py-2.5 px-4 rounded-xl text-xs md:text-sm hover:bg-sky-50 transition active:scale-95 shadow-sm cursor-pointer flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-sparkles text-sky-500"></i>
+          <span>✨ あなたも「好き顔9選」を診断してみる</span>
+        </button>
       </div>
 
+      <div class="text-center mb-6">
+        <span class="text-xs font-bold text-sky-600 uppercase tracking-widest bg-sky-100/80 px-3 py-1 rounded-full border border-sky-200">Diagnosis Result</span>
+        <h2 id="result-title-text" class="text-2xl md:text-3xl font-extrabold text-slate-800 mt-2">あなたの好き顔 9選</h2>
+      </div>
+
+      <!-- 3x3 Result Grid Container -->
       <div id="result-grid-container" class="bg-slate-900 p-3 md:p-4 rounded-3xl shadow-2xl w-full max-w-md mx-auto mb-6 border border-slate-800">
         <div id="result-grid" class="grid grid-cols-3 gap-2">
         </div>
@@ -190,13 +201,14 @@
         </div>
       </div>
 
+      <!-- SNS Share Section -->
       <div class="w-full max-w-md bg-white rounded-2xl border border-sky-100 p-5 mb-6 text-center shadow-sm">
         <p class="font-bold text-slate-700 text-sm mb-4 flex items-center justify-center gap-1.5">
           <i class="fa-solid fa-share-nodes text-sky-500"></i>
-          <span>結果をSNSで共有する</span>
+          <span>この結果をSNSで共有する</span>
         </p>
         
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
           <button onclick="shareX()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold transition active:scale-95 cursor-pointer">
             <i class="fa-brands fa-x-twitter text-lg mb-1"></i>
             <span>Xでポスト</span>
@@ -217,47 +229,16 @@
             <span>URLコピー</span>
           </button>
         </div>
-
-        <button id="btn-download" onclick="generateAndShowResultImage()" class="w-full py-3 px-4 bg-sky-50 text-sky-700 hover:bg-sky-100 font-bold text-xs md:text-sm rounded-xl transition flex items-center justify-center gap-2 border border-sky-200 active:scale-95 cursor-pointer">
-          <i class="fa-solid fa-image text-sky-500"></i>
-          <span>9選画像を保存する</span>
-        </button>
       </div>
 
-      <button onclick="resetDiagnosis()" class="text-slate-400 hover:text-sky-600 text-sm font-semibold underline underline-offset-4 py-2 transition cursor-pointer">
-        もう一度やり直す
+      <!-- 診断リンク -->
+      <button onclick="resetDiagnosis()" class="w-full max-w-md bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-600 hover:to-cyan-600 text-white font-bold py-3.5 px-6 rounded-2xl shadow-md transition duration-200 text-sm md:text-base flex items-center justify-center gap-2 active:scale-95 cursor-pointer">
+        <i class="fa-solid fa-rotate-right"></i>
+        <span>新しく自分の診断を始める</span>
       </button>
     </div>
 
   </main>
-
-  <!-- Image Save / Download Modal -->
-  <div id="image-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex-col items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-5 flex flex-col items-center shadow-2xl border border-sky-100 relative max-h-[90vh] overflow-y-auto">
-      <button onclick="closeImageModal()" class="absolute top-3 right-3 text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold">
-        ✕
-      </button>
-
-      <h3 class="font-extrabold text-slate-800 text-base md:text-lg mb-1">画像を保存する</h3>
-      <p class="text-xs text-slate-500 mb-4 text-center">
-        スマホの方は<span class="text-sky-600 font-bold">画像を長押し</span>して保存できます。<br>
-        PCの方は下のボタンからダウンロード可能です。
-      </p>
-
-      <div class="w-full rounded-2xl overflow-hidden border border-slate-200 shadow-md mb-4 bg-slate-900">
-        <img id="modal-generated-image" src="" alt="ザセカ好き顔9選結果" class="w-full h-auto block select-all">
-      </div>
-
-      <div class="w-full flex gap-2">
-        <a id="btn-modal-download" href="#" download="ザセカ好き顔9選.png" class="flex-1 bg-gradient-to-r from-sky-500 to-cyan-500 text-white font-bold py-3 px-4 rounded-xl text-xs md:text-sm text-center shadow-md active:scale-95 transition">
-          <i class="fa-solid fa-download mr-1"></i> 画像をダウンロード
-        </a>
-        <button onclick="closeImageModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 px-4 rounded-xl text-xs md:text-sm active:scale-95 transition">
-          閉じる
-        </button>
-      </div>
-    </div>
-  </div>
 
   <footer class="py-4 text-center text-xs text-slate-400">
     &copy; THE SECOND Fan Made Diagnosis
@@ -404,17 +385,40 @@
       { id: 137, name: "アイクぬわら", group: "超新塾", img: "https://i.imgur.com/Osgy67V.jpeg" }  
     ];
 
-    // GitHub PagesからのImgur画像CORSブロックを回避する画像プロキシプロバイダー
+    // 直リンク画像URL（referrerpolicy="no-referrer"により直接表示可能）
     function getCORSProxyUrl(url) {
       if (!url) return '';
-      if (url.startsWith('data:')) return url;
-      return 'https://wsrv.nl/?url=' + encodeURIComponent(url) + '&output=jpg';
+      return url;
+    }
+
+    function getPlaceholderSvg(name = '') {
+      const char = name ? name.charAt(0) : '🎙';
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+        <defs>
+          <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="%23e0f2fe" />
+            <stop offset="100%" stop-color="%23bae6fd" />
+          </linearGradient>
+        </defs>
+        <rect width="100%" height="100%" fill="url(%23grad)"/>
+        <circle cx="150" cy="120" r="50" fill="%2338bdf8" opacity="0.3"/>
+        <circle cx="150" cy="270" r="90" fill="%2338bdf8" opacity="0.2"/>
+        <text x="150" y="150" font-family="sans-serif" font-size="72" font-weight="bold" fill="%230284c7" text-anchor="middle" dominant-baseline="middle">${char}</text>
+      </svg>`;
+      return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+    }
+
+    function handleImageError(imgElement) {
+      imgElement.onerror = null;
+      const candName = imgElement.getAttribute('data-name') || imgElement.alt || '';
+      imgElement.src = getPlaceholderSvg(candName);
     }
 
     function getDynamicKFactor(matchCount) {
-      if (matchCount < 3) return 48;
-      if (matchCount < 8) return 32;
-      return 20;
+      if (matchCount < 3) return 40;
+      if (matchCount < 7) return 28;
+      if (matchCount < 12) return 18;
+      return 12;
     }
 
     let candidates = [];
@@ -423,6 +427,7 @@
     let pairHistory = [];
     let stateHistory = [];
     let isFinished = false;
+    let activeResultTop9 = [];
 
     function showToast(message, isSuccess = true) {
       const container = document.getElementById("toast-container");
@@ -456,6 +461,14 @@
         return;
       }
 
+      if (window.location.search) {
+        try {
+          history.pushState(null, "", window.location.pathname);
+        } catch (e) {
+          console.warn("History pushState error handled:", e);
+        }
+      }
+
       const shuffled = [...INITIAL_CANDIDATES].sort(() => Math.random() - 0.5);
 
       candidates = shuffled.map(c => ({
@@ -470,6 +483,9 @@
       isFinished = false;
 
       document.getElementById("screen-top").classList.add("hidden");
+      document.getElementById("screen-result").classList.add("hidden");
+      document.getElementById("screen-result").classList.remove("flex");
+
       document.getElementById("screen-battle").classList.remove("hidden");
       document.getElementById("screen-battle").classList.add("flex");
       document.getElementById("step-indicator").classList.remove("hidden");
@@ -533,29 +549,18 @@
     function calculateCertainty() {
       if (candidates.length === 0) return 0;
 
-      const roundProgress = Math.min(1.0, currentRoundIndex / 120);
-      const roundScore = roundProgress * 45;
+      const TARGET_ROUNDS = 150;
+      const progressByRounds = Math.min(100, Math.floor((currentRoundIndex / TARGET_ROUNDS) * 100));
 
       const sorted = [...candidates].sort((a, b) => b.rating - a.rating);
       const gap = sorted[8].rating - sorted[9].rating;
-      const gapScore = Math.min(1.0, Math.max(0, gap) / 80) * 35;
-
-      const top12 = sorted.slice(0, 12);
-      const avgMatchesTop12 = top12.reduce((acc, c) => acc + c.matchCount, 0) / 12;
-      const matchScore = Math.min(1.0, avgMatchesTop12 / 5) * 20;
-
-      let total = Math.floor(roundScore + gapScore + matchScore);
-
-      if (currentRoundIndex >= 180) {
-        const extra = Math.floor(((currentRoundIndex - 180) / 20) * 15);
-        total = Math.max(total, 85 + extra);
+      
+      // 150回到達、または120回以降で9位と10位の差が十分に開いた場合に確定
+      if (currentRoundIndex >= TARGET_ROUNDS || (currentRoundIndex >= 120 && gap > 180)) {
+        return 100;
       }
 
-      if (currentRoundIndex >= 200) {
-        total = 100;
-      }
-
-      return Math.min(100, total);
+      return progressByRounds;
     }
 
     function updateBattleView() {
@@ -569,10 +574,7 @@
 
       if (certainty >= 100 && !isFinished) {
         isFinished = true;
-        showToast("🎉 あなたの好き顔ベスト9が決定しました！");
-        setTimeout(() => {
-          showResults();
-        }, 500);
+        showImmediateResults();
         return;
       }
 
@@ -596,11 +598,17 @@
       void container.offsetWidth;
       container.classList.add("animate-card-switch");
 
-      document.getElementById("img-a").src = getCORSProxyUrl(candA.img);
+      const imgA = document.getElementById("img-a");
+      imgA.setAttribute('data-name', candA.name);
+      imgA.src = candA.img;
+
       document.getElementById("name-a").textContent = candA.name;
       document.getElementById("group-a").textContent = candA.group;
 
-      document.getElementById("img-b").src = getCORSProxyUrl(candB.img);
+      const imgB = document.getElementById("img-b");
+      imgB.setAttribute('data-name', candB.name);
+      imgB.src = candB.img;
+
       document.getElementById("name-b").textContent = candB.name;
       document.getElementById("group-b").textContent = candB.group;
     }
@@ -685,39 +693,97 @@
       updateBattleView();
     }
 
-    function showResults() {
+    function showImmediateResults() {
       clearAllButtonFocus();
 
       document.getElementById("screen-battle").classList.add("hidden");
       document.getElementById("screen-battle").classList.remove("flex");
       document.getElementById("step-indicator").classList.add("hidden");
+
+      const sorted = [...candidates].sort((a, b) => b.rating - a.rating);
+      activeResultTop9 = sorted.slice(0, 9);
+
+      try {
+        const top9Ids = activeResultTop9.map(item => item.id).join(",");
+        const newUrl = `${window.location.pathname}?r=${top9Ids}`;
+        history.pushState(null, "", newUrl);
+      } catch (e) {
+        console.warn("History pushState error handled:", e);
+      }
+
+      renderResultScreen(activeResultTop9, false);
+    }
+
+    function renderResultScreen(top9List, isShared = false) {
+      document.getElementById("screen-top").classList.add("hidden");
+      document.getElementById("screen-battle").classList.add("hidden");
+      document.getElementById("screen-battle").classList.remove("flex");
+      document.getElementById("step-indicator").classList.add("hidden");
+
       document.getElementById("screen-result").classList.remove("hidden");
       document.getElementById("screen-result").classList.add("flex");
 
-      const sorted = [...candidates].sort((a, b) => b.rating - a.rating);
-      const top9 = sorted.slice(0, 9);
+      const sharedNotice = document.getElementById("shared-notice");
+      const resultTitle = document.getElementById("result-title-text");
+
+      if (isShared) {
+        sharedNotice.classList.remove("hidden");
+        resultTitle.textContent = "みんなの好き顔 9選";
+      } else {
+        sharedNotice.classList.add("hidden");
+        resultTitle.textContent = "あなたの好き顔 9選";
+      }
 
       const gridContainer = document.getElementById("result-grid");
       gridContainer.innerHTML = "";
 
-      top9.forEach((item, index) => {
+      top9List.forEach((item, index) => {
         const card = document.createElement("div");
         card.className = "bg-slate-800/90 rounded-xl overflow-hidden flex flex-col items-center p-1 text-center border border-slate-700/80 shadow-md";
         card.innerHTML = `
           <div class="w-full aspect-square overflow-hidden rounded-lg mb-1 bg-slate-900 relative">
-            <img src="${getCORSProxyUrl(item.img)}" alt="${item.name}" class="w-full h-full object-cover">
+            <img src="${item.img}" alt="${item.name}" data-name="${item.name}" referrerpolicy="no-referrer" onerror="handleImageError(this)" class="w-full h-full object-cover">
             <span class="absolute top-1 left-1 bg-gradient-to-r from-sky-400 to-cyan-500 text-slate-950 text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-md">${index + 1}</span>
           </div>
           <span class="text-[10px] font-bold text-slate-100 line-clamp-1 w-full leading-tight">${item.name}</span>
+          <span class="text-[8px] text-sky-400/80 font-medium line-clamp-1 w-full">${item.group}</span>
         `;
         gridContainer.appendChild(card);
       });
+
+      activeResultTop9 = top9List;
+    }
+
+    function checkSharedUrlResult() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const rParam = urlParams.get("r");
+
+      if (rParam) {
+        const ids = rParam.split(",").map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+        if (ids.length > 0) {
+          const top9List = ids.map(id => INITIAL_CANDIDATES.find(item => item.id === id)).filter(Boolean);
+          if (top9List.length > 0) {
+            renderResultScreen(top9List, true);
+            return true;
+          }
+        }
+      }
+      return false;
     }
 
     function resetDiagnosis() {
       clearAllButtonFocus();
+      if (window.location.search) {
+        try {
+          history.pushState(null, "", window.location.pathname);
+        } catch (e) {
+          console.warn("History pushState error handled:", e);
+        }
+      }
       document.getElementById("screen-result").classList.add("hidden");
       document.getElementById("screen-result").classList.remove("flex");
+      document.getElementById("screen-battle").classList.add("hidden");
+      document.getElementById("screen-battle").classList.remove("flex");
       document.getElementById("screen-top").classList.remove("hidden");
     }
 
@@ -730,18 +796,16 @@
     }
 
     function shareLINE() {
-      const sorted = [...candidates].sort((a, b) => b.rating - a.rating);
-      const top9 = sorted.slice(0, 9);
-      const listText = top9.slice(0, 3).map((item, idx) => `${idx + 1}位 ${item.name}`).join(' / ');
+      const listText = activeResultTop9.slice(0, 3).map((item, idx) => `${idx + 1}位:${item.name}`).join(' / ');
       const url = encodeURIComponent(window.location.href);
-      const text = encodeURIComponent(`私の「ザセカ好き顔9選」結果（1〜3位: ${listText} ほか）`);
+      const text = encodeURIComponent(`私の「ザセカ好き顔9選」結果（TOP3: ${listText} ほか）`);
       const lineUrl = `https://line.me/R/share?text=${text}%20${url}`;
       window.open(lineUrl, "_blank");
     }
 
     function shareInstagram() {
-      showToast("画像を生成中... 完了後に画像を長押しして保存してください！");
-      generateAndShowResultImage();
+      copyLink();
+      showToast("個別結果URLをコピーしました！Instagramストーリーズに貼り付けてシェアできます。");
     }
 
     function copyLink() {
@@ -751,174 +815,16 @@
       tempInput.select();
       try {
         document.execCommand("copy");
-        showToast("診断ページのURLをコピーしました！");
+        showToast("結果画面の個別URLをコピーしました！");
       } catch (err) {
         showToast("URLのコピーに失敗しました", false);
       }
       document.body.removeChild(tempInput);
     }
 
-    // GitHub Pages上でも100%エラー無しで動作するHTML5 2D Canvas描画エンジン
-    async function generateAndShowResultImage() {
-      const btnDownload = document.getElementById("btn-download");
-      showToast("高画質9選画像を生成中...");
-      if (btnDownload) btnDownload.disabled = true;
-
-      try {
-        const sorted = [...candidates].sort((a, b) => b.rating - a.rating);
-        const top9 = sorted.slice(0, 9);
-
-        // Canvas初期設定 (1080x1350 - モバイル/SNSに最適化された解像度)
-        const canvas = document.createElement('canvas');
-        canvas.width = 1080;
-        canvas.height = 1350;
-        const ctx = canvas.getContext('2d');
-
-        // 1. 背景描画 (ダークグラデーション)
-        const bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        bgGradient.addColorStop(0, '#0f172a');
-        bgGradient.addColorStop(1, '#1e293b');
-        ctx.fillStyle = bgGradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // 外枠のアクセントライン
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 8;
-        ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
-
-        // 2. タイトルヘッダー描画
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 52px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('THE SECOND 好き顔9選', canvas.width / 2, 100);
-
-        ctx.fillStyle = '#38bdf8';
-        ctx.font = 'bold 24px sans-serif';
-        ctx.fillText('MY BEST 9 FACES DIAGNOSIS', canvas.width / 2, 140);
-
-        // 3. 9選画像の並列ロード (CORSプロキシ経由で画像読み込み)
-        const loadedImages = await Promise.all(
-          top9.map(item => {
-            return new Promise((resolve) => {
-              const img = new Image();
-              img.crossOrigin = 'anonymous';
-              img.onload = () => resolve({ img, item });
-              img.onerror = () => {
-                // ロード失敗時のフォールバック
-                const fallbackImg = new Image();
-                fallbackImg.onload = () => resolve({ img: fallbackImg, item });
-                fallbackImg.src = 'https://placehold.co/300x300/1e293b/ffffff?text=' + encodeURIComponent(item.name);
-              };
-              img.src = getCORSProxyUrl(item.img);
-            });
-          })
-        );
-
-        // 4. 3x3 グリッド描画
-        const startX = 65;
-        const startY = 180;
-        const cardWidth = 290;
-        const cardHeight = 350;
-        const gapX = 40;
-        const gapY = 30;
-
-        loadedImages.forEach(({ img, item }, idx) => {
-          const col = idx % 3;
-          const row = Math.floor(idx / 3);
-          const x = startX + col * (cardWidth + gapX);
-          const y = startY + row * (cardHeight + gapY);
-
-          // カード背景
-          ctx.fillStyle = '#1e293b';
-          ctx.strokeStyle = '#334155';
-          ctx.lineWidth = 3;
-
-          // 角丸カード描画
-          ctx.beginPath();
-          if (ctx.roundRect) {
-            ctx.roundRect(x, y, cardWidth, cardHeight, 20);
-          } else {
-            ctx.rect(x, y, cardWidth, cardHeight);
-          }
-          ctx.fill();
-          ctx.stroke();
-
-          // 写真描画 (クリッピング付き)
-          const imgSize = 270;
-          const imgX = x + (cardWidth - imgSize) / 2;
-          const imgY = y + 10;
-
-          ctx.save();
-          ctx.beginPath();
-          if (ctx.roundRect) {
-            ctx.roundRect(imgX, imgY, imgSize, imgSize, 16);
-          } else {
-            ctx.rect(imgX, imgY, imgSize, imgSize);
-          }
-          ctx.clip();
-          ctx.drawImage(img, imgX, imgY, imgSize, imgSize);
-          ctx.restore();
-
-          // 順位バッジ (#1〜#9)
-          ctx.beginPath();
-          ctx.arc(imgX + 26, imgY + 26, 20, 0, Math.PI * 2);
-          ctx.fillStyle = '#38bdf8';
-          ctx.fill();
-
-          ctx.fillStyle = '#0f172a';
-          ctx.font = 'black 22px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(String(idx + 1), imgX + 26, imgY + 26);
-
-          // 名前とコンビ名テキスト
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 22px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'alphabetic';
-          ctx.fillText(item.name, x + cardWidth / 2, y + cardHeight - 38);
-
-          ctx.fillStyle = '#0284c7';
-          ctx.font = '500 16px sans-serif';
-          ctx.fillText(item.group, x + cardWidth / 2, y + cardHeight - 14);
-        });
-
-        // 5. フッターハッシュタグ描画
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '22px sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText('THE SECOND 好き顔診断', startX, canvas.height - 50);
-
-        ctx.fillStyle = '#38bdf8';
-        ctx.font = 'bold 24px sans-serif';
-        ctx.textAlign = 'right';
-        ctx.fillText('#ザセカ好き顔9選', canvas.width - startX, canvas.height - 50);
-
-        // 6. DataURL生成 & モーダル表示
-        const dataUrl = canvas.toDataURL('image/png');
-        
-        const modalImg = document.getElementById("modal-generated-image");
-        const btnModalDownload = document.getElementById("btn-modal-download");
-
-        modalImg.src = dataUrl;
-        btnModalDownload.href = dataUrl;
-
-        document.getElementById("image-modal").classList.remove("hidden");
-        document.getElementById("image-modal").classList.add("flex");
-
-        showToast("9選画像が完成しました！");
-      } catch (err) {
-        console.error("Canvas Export Error:", err);
-        showToast("画像の生成に失敗しました。画面スクリーンショットをご利用ください。", false);
-      } finally {
-        if (btnDownload) btnDownload.disabled = false;
-      }
-    }
-
-    function closeImageModal() {
-      document.getElementById("image-modal").classList.add("hidden");
-      document.getElementById("image-modal").classList.remove("flex");
-    }
+    window.onload = function() {
+      checkSharedUrlResult();
+    };
   </script>
 </body>
 </html>
